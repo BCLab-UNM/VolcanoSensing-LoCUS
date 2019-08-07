@@ -1,0 +1,98 @@
+<?xml version="1.0" ?>
+<argos-configuration>
+
+  <!-- ************************* -->
+  <!-- * General configuration * -->
+  <!-- ************************* -->
+  <framework>
+    <system     threads="0" />
+    <experiment length="0"
+                ticks_per_second="16"
+                random_seed="1204" />
+  </framework>
+
+  <!-- *************** -->
+  <!-- * Controllers * -->
+  <!-- *************** -->
+  <controllers>
+
+    <Spiri_controller id="Spiri"
+                         library="build/source/faulttolerance/libSpiri_controller">
+      <actuators>
+        <quadrotor_position implementation="default" />
+      </actuators>
+      <sensors>
+        <!--<range_and_bearing implementation="medium" medium="rab" show_rays="false" />-->
+        <!--<colored_blob_perspective_camera implementation="default" medium="leds" show_rays="true" />-->
+      </sensors>
+
+      <params>
+
+      </params>
+
+    </Spiri_controller>
+
+  </controllers>
+
+  <loop_functions library = "build/source/faulttolerance/libGradient_loop_functions"
+                  label   = "Gradient_loop_functions"/>
+
+  <!-- *********************** -->
+  <!-- * Arena configuration * -->
+  <!-- *********************** -->
+  <arena size="100.0, 100.0, 1" center="0,0,0.5">
+
+    <floor id="floor" source="loop_functions" pixels_per_meter="10"/>
+
+    <distribute>
+      <position method="uniform" min="-5,-5,0" max="5,5,0" />
+      <orientation method="gaussian" mean="0,0,0" std_dev="360,0,0" />
+      <entity quantity="100" max_trials="100">
+        <!--<foot-bot id="Gradient_">-->
+          <!--<controller config="Gradient"/>-->
+        <!--</foot-bot>-->
+        <spiri id="spiri0" camera_range="3" camera_aperture="30">
+          <body position="1,1,0" orientation="45,0,0" />
+          <controller config="Spiri" />
+        </spiri>
+      </entity>
+    </distribute>
+
+    <spiri id="spiri0" camera_range="3" camera_aperture="30">
+      <body position="1,1,0" orientation="45,0,0" />
+      <controller config="Spiri" />
+    </spiri>
+
+    <!--<mini-quadrotor id="mq0">-->
+      <!--<body position="0,0,0" orientation="0,0,0" />-->
+      <!--<controller config="lua" />-->
+    <!--</mini-quadrotor>-->
+
+  </arena>
+
+  <!-- ******************* -->
+  <!-- * Physics engines * -->
+  <!-- ******************* -->
+  <physics_engines>
+    <!--<dynamics2d id="dyn2d" />-->
+    <pointmass3d id="dyn3d" />
+  </physics_engines>
+
+  <!-- ********* -->
+  <!-- * Media * -->
+  <!-- ********* -->
+  <media />
+
+  <!-- ****************** -->
+  <!-- * Visualization * -->
+  <!-- ****************** -->
+  <visualization>
+    <qt-opengl>
+      <camera>
+        <placement idx="0" position="  0, 0, 10" look_at="0, 0, 0" lens_focal_length="25"/>
+      </camera>
+      <user_functions label="Gradient_qt_user_functions"/>
+    </qt-opengl>
+  </visualization>
+
+</argos-configuration>
