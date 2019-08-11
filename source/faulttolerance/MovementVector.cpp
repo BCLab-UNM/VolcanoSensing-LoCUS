@@ -1,4 +1,3 @@
-
 #include "MovementVector.h"
 
 void MovementVector::add(Movement* movement) {

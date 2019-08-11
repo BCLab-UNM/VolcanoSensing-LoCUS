@@ -1,10 +1,12 @@
 #include "SpiriController.h"
+#include "WaitForChildren.h"
+#include "FaultToleranceLoopFunctions.h"
 
 void Spiri_controller::Init(TConfigurationNode& node) {
+  compassSensor = GetSensor<argos::CCI_PositioningSensor>("positioning");
   positionActuator = GetActuator<argos::CCI_QuadRotorPositionActuator>("quadrotor_position");
   movement = new MovementVector();
 }
-
 
 void Spiri_controller::ControlStep() {
   finished = movement->step();
@@ -12,70 +14,60 @@ void Spiri_controller::ControlStep() {
 
 void Spiri_controller::Reset() {
   finished = false;
-  setupPosition(index);
+  setupPosition();
 }
-
 
 bool Spiri_controller::IsFinished() {
-  return false;
+  return finished;
 }
 
-
-void Spiri_controller::SetIndex(int index) {
-  this->index = index;
-  setupPosition(index);
+void Spiri_controller::Setup(int id, int level, argos::CVector3 offset, std::vector<Spiri_controller*>* controllers) {
+  this->id = id;
+  this->level = level;
+  this->offset = offset;
+  this->controllers = controllers;
+  setupPosition();
 }
 
-void Spiri_controller::setupPosition(int index) {
+void Spiri_controller::SetParent(int parentId) {
+  this->parentId = parentId;
+}
 
-  double rmax = 3;
-  double rmin = 4;
+void Spiri_controller::AddChild(int childId) {
+  children.push_back(childId);
+}
 
-  int level = 0;
-  int innerswarmcount = 0;
-  int levelchildrencount = 0;
-  double radius = 0;
-  while (innerswarmcount < index) {
-    level = level + 1;
-    radius = ((level + 1) * rmax);
-    double levelangle = 2 * asin(rmin / (2 * radius));
-    levelchildrencount = int((M_PI * 2) / levelangle);
-    innerswarmcount = innerswarmcount + levelchildrencount;
-  }
-
-  double trueangle = 0;
-  if(levelchildrencount > 0) {
-    trueangle = (M_PI * 2) / levelchildrencount;
-    radius = radius - rmax;
-  }
-
-  double x = radius * cos((index - (innerswarmcount - levelchildrencount)) * trueangle);
-  double y = radius * sin((index - (innerswarmcount - levelchildrencount)) * trueangle);
-
+void Spiri_controller::setupPosition() {
   movement->reset();
-  MoveToPosition* starting_position = new MoveToPosition(positionActuator);
-  starting_position->init(argos::CVector3(x, y, 10), false);
+  MoveToPosition* starting_position = new MoveToPosition(positionActuator, compassSensor);
+  starting_position->init(offset);
   movement->add(starting_position);
-  Delay* delay = new Delay(30);
-  movement->add(delay);
-  MoveToPosition* next_position1 = new MoveToPosition(positionActuator);
-  next_position1->init(argos::CVector3(10, 0, 10), true);
-  movement->add(next_position1);
-  Delay* delay1 = new Delay(30);
-  movement->add(delay1);
-  MoveToPosition* next_position2 = new MoveToPosition(positionActuator);
-  next_position2->init(argos::CVector3(-10, 10, 10), true);
-  movement->add(next_position2);
-  Delay* delay2 = new Delay(30);
-  movement->add(delay2);
-  MoveToPosition* next_position3 = new MoveToPosition(positionActuator);
-  next_position3->init(argos::CVector3(-10, -10, 10), true);
-  movement->add(next_position3);
-  Delay* delay3 = new Delay(30);
-  movement->add(delay3);
-  MoveToPosition* next_position4 = new MoveToPosition(positionActuator);
-  next_position4->init(argos::CVector3(10, -10, 10), true);
-  movement->add(next_position4);
+  WaitForChildren* wait = new WaitForChildren(this, controllers);
+  movement->add(wait);
+}
+
+void Spiri_controller::AddRecursiveWaypoint(CVector3 vector3) {
+  MoveToPosition* waypoint = new MoveToPosition(positionActuator, compassSensor);
+  waypoint->init(argos::CVector3(vector3.GetX() + offset.GetX(),
+          vector3.GetY() + offset.GetY(),
+          vector3.GetZ() + offset.GetZ()));
+
+  Gradient_loop_functions& loopFunctions = static_cast<Gradient_loop_functions&>(CSimulator::GetInstance().GetLoopFunctions());
+  for(int i = 0; i < 2; i++) {
+    for(int j = 0; j < 2; j++) {
+      loopFunctions.coverage[(int)(vector3.GetX() + offset.GetX() + i + 500)][(int)(vector3.GetY() + offset.GetY() + j + 500)] = true;
+    }
+  }
+
+
+  movement->add(waypoint);
+  WaitForChildren* wait = new WaitForChildren(this, controllers);
+  movement->add(wait);
+
+  for(int childId : children) {
+    Spiri_controller* child = controllers->at(childId );
+    child->AddRecursiveWaypoint(vector3);
+  }
 }
 
 REGISTER_CONTROLLER(Spiri_controller, "Spiri_controller")
