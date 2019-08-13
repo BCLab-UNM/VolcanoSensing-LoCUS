@@ -3,6 +3,12 @@
 
 void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
+  TConfigurationNode simNode  = GetNode(node, "simulation");
+
+  GetNodeAttribute(simNode, "RMin", rmin);
+  GetNodeAttribute(simNode, "RMax", rmax);
+  GetNodeAttribute(simNode, "StopCoverageRadius", stopRadius);
+
   for(int i = 0; i < 1000; i++) {
     for(int j = 0; j < 1000; j++) {
       coverage[i][j] = false;
@@ -22,9 +28,6 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
     controllers.push_back(&controller);
 
-    double rmax = 2;
-    double rmin = 1;
-
     int level = 0;
     int innerswarmcount = 0;
     int levelchildrencount = 0;
@@ -35,6 +38,10 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
       double levelangle = 2 * asin(rmin / radius);
       levelchildrencount = int((M_PI * 2) / levelangle);
       innerswarmcount = innerswarmcount + levelchildrencount;
+    }
+
+    if(fullshells < level) {
+      fullshells = level;
     }
 
     double shell_angle = 0;
@@ -81,21 +88,27 @@ int Gradient_loop_functions::calculateParent(int level, argos::CVector3 childOff
 }
 
 void Gradient_loop_functions::PostStep() {
+  simulationTime++;
   if(rootController->IsFinished()) {
-    argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex++, 15, 20, 1);
+    if(!constellation_setup) {
+      LOG << "Setup:" << simulationTime << endl;
+      cout << "Setup:" << simulationTime << endl;
+      constellation_setup = true;
+      cout << "Fullshells:" << fullshells << endl;
+    }
+    argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex++, 2 * fullshells * rmax);
     rootController->AddRecursiveWaypoint(waypoint);
     waypoints.push_back(waypoint);
   }
 }
 
-argos::CVector3 Gradient_loop_functions::buildArchimedesSpiralWaypoint(int index, int size, int loops, double radius) {
+argos::CVector3 Gradient_loop_functions::buildArchimedesSpiralWaypoint(int index, double radius) {
   double altitude = 0;
 
   // https://www.comsol.com/blogs/how-to-build-a-parameterized-archimedean-spiral-geometry/
-  double a = radius;
-  double b = (radius * size * size) / (2 * M_PI * loops);
+  double a = 0;
+  double b = radius / (2 * M_PI);
   double index_angle_offset = 0;//(1.0 / size) * (2 * M_PI);
-  int points_per_rotation = 100;
 
   double angle = index * 2 * M_PI / points_per_rotation;
   double point_radius = a + (b * angle);
@@ -107,10 +120,23 @@ argos::CVector3 Gradient_loop_functions::buildArchimedesSpiralWaypoint(int index
 
 void Gradient_loop_functions::Reset() {
   spiralIndex = 0;
+  simulationTime = 0;
+
+  for(int i = 0; i < 1000; i++) {
+    for(int j = 0; j < 1000; j++) {
+      coverage[i][j] = false;
+    }
+  }
 }
 
 bool Gradient_loop_functions::IsExperimentFinished() {
-  return rootController->IsFinished() && spiralIndex >= 5 * 100;
+  bool surveyCovered = (2.0 * fullshells * rmax * spiralIndex / points_per_rotation) > stopRadius;
+  return rootController->IsFinished() && surveyCovered;
+}
+
+void Gradient_loop_functions::PostExperiment() {
+  LOG << "Time:" << simulationTime << endl;
+  cout << "Time:" << simulationTime << endl;
 }
 
 REGISTER_LOOP_FUNCTIONS(Gradient_loop_functions, "Gradient_loop_functions")

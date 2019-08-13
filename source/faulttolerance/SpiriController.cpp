@@ -41,32 +41,38 @@ void Spiri_controller::setupPosition() {
   movement->reset();
   MoveToPosition* starting_position = new MoveToPosition(positionActuator, compassSensor);
   starting_position->init(offset);
+  addCoverage(CVector3(0, 0, 0));
   movement->add(starting_position);
   WaitForChildren* wait = new WaitForChildren(this, controllers);
   movement->add(wait);
 }
 
-void Spiri_controller::AddRecursiveWaypoint(CVector3 vector3) {
-  MoveToPosition* waypoint = new MoveToPosition(positionActuator, compassSensor);
-  waypoint->init(argos::CVector3(vector3.GetX() + offset.GetX(),
-          vector3.GetY() + offset.GetY(),
-          vector3.GetZ() + offset.GetZ()));
+void Spiri_controller::AddRecursiveWaypoint(CVector3 waypoint) {
+  MoveToPosition* moveTo = new MoveToPosition(positionActuator, compassSensor);
+  moveTo->init(argos::CVector3(waypoint.GetX() + offset.GetX(),
+                               waypoint.GetY() + offset.GetY(),
+                               waypoint.GetZ() + offset.GetZ()));
 
-  Gradient_loop_functions& loopFunctions = static_cast<Gradient_loop_functions&>(CSimulator::GetInstance().GetLoopFunctions());
-  for(int i = 0; i < 2; i++) {
-    for(int j = 0; j < 2; j++) {
-      loopFunctions.coverage[(int)(vector3.GetX() + offset.GetX() + i + 500)][(int)(vector3.GetY() + offset.GetY() + j + 500)] = true;
-    }
-  }
+  addCoverage(waypoint);
 
 
-  movement->add(waypoint);
+  movement->add(moveTo);
   WaitForChildren* wait = new WaitForChildren(this, controllers);
   movement->add(wait);
 
   for(int childId : children) {
     Spiri_controller* child = controllers->at(childId );
-    child->AddRecursiveWaypoint(vector3);
+    child->AddRecursiveWaypoint(waypoint);
+  }
+}
+
+void Spiri_controller::addCoverage(CVector3 waypoint) {
+
+  Gradient_loop_functions& loopFunctions = static_cast<Gradient_loop_functions&>(CSimulator::GetInstance().GetLoopFunctions());
+  for(int i = 0; i < loopFunctions.rmax; i++) {
+    for(int j = -1; j < loopFunctions.rmax; j++) {
+      loopFunctions.coverage[(int)(waypoint.GetX() + offset.GetX() + i + 500)][(int)(waypoint.GetY() + offset.GetY() + j + 500)] = true;
+    }
   }
 }
 

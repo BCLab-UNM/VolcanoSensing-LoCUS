@@ -38,7 +38,7 @@
     <!-- un-evolvable environment variables -->
     <simulation RMin    = "1"
                 RMax    = "2"
-                StopCoverageRadius = "100"/>
+                StopCoverageRadius = "20"/>
 
   </loop_functions>
 
@@ -54,9 +54,9 @@
       <orientation method="gaussian" mean="0,0,0" std_dev="360,0,0" />
       <!--<entity quantity="1" max_trials="100">-->
       <!--<entity quantity="13" max_trials="100">-->
-      <!--<entity quantity="31" max_trials="100">-->
+      <entity quantity="31" max_trials="100">
       <!--<entity quantity="42" max_trials="100">-->
-      <entity quantity="87" max_trials="100">
+      <!--<entity quantity="87" max_trials="100">-->
         <spiri id="spiri0" camera_range="3" camera_aperture="30">
           <body position="1,1,0" orientation="45,0,0" />
           <controller config="Spiri" />
@@ -82,12 +82,12 @@
   <!-- * Visualization * -->
   <!-- ****************** -->
   <visualization>
-    <qt-opengl>
-      <camera>
-        <placement idx="0" position="  0, 0, 10" look_at="0, 0, 0" lens_focal_length="25"/>
-      </camera>
-      <user_functions label="Gradient_qt_user_functions"/>
-    </qt-opengl>
+    <!--<qt-opengl>-->
+      <!--<camera>-->
+        <!--<placement idx="0" position="  0, 0, 10" look_at="0, 0, 0" lens_focal_length="25"/>-->
+      <!--</camera>-->
+      <!--<user_functions label="Gradient_qt_user_functions"/>-->
+    <!--</qt-opengl>-->
   </visualization>
 
 </argos-configuration>

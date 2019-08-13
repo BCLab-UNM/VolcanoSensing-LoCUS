@@ -34,7 +34,7 @@ public:
 
   vector<int> GetChildren() { return children; }
 
-  void AddRecursiveWaypoint(CVector3 vector3);
+  void AddRecursiveWaypoint(CVector3 waypoint);
 
 private:
 
@@ -50,8 +50,7 @@ private:
   std::vector<int> children;
   void setupPosition() ;
 
-  void buildArchimedesSpiralWaypoints(int size, int index, int loops, double radius);
-
+  void addCoverage(CVector3 waypoint);
 };
 
 #endif /* SPIRI_CONTROLLER_H_ */
