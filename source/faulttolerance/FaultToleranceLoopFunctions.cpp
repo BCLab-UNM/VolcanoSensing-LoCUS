@@ -1,5 +1,8 @@
 #include "FaultToleranceLoopFunctions.h"
 #include "SpiriController.h"
+#include "EmptyMovement.h"
+#include "ThenMovement.h"
+#include "ReplaceWithHeir.h"
 
 void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
@@ -8,12 +11,13 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   GetNodeAttribute(simNode, "RMin", rmin);
   GetNodeAttribute(simNode, "RMax", rmax);
   GetNodeAttribute(simNode, "StopCoverageRadius", stopRadius);
+  string droneFailureString;
+  string emptyDroneFailureString = "";
+  GetNodeAttributeOrDefault(simNode, "DroneFailures", droneFailureString, emptyDroneFailureString);
 
-  for(int i = 0; i < 1000; i++) {
-    for(int j = 0; j < 1000; j++) {
-      coverage[i][j] = false;
-    }
-  }
+  loadDroneFailures(droneFailureString);
+
+  initCoverage();
 
   CSpace::TMapPerType& spiris = GetSpace().GetEntitiesByType("spiri");
 
@@ -68,6 +72,9 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
       controllers.at(parentId)->AddChild(controller->GetIdentifier());
     }
   }
+
+  rootController->SetupHeir();
+  fullshells = rootController->GetMinimumHeight();
 }
 
 int Gradient_loop_functions::calculateParent(int level, argos::CVector3 childOffset) {
@@ -89,17 +96,76 @@ int Gradient_loop_functions::calculateParent(int level, argos::CVector3 childOff
 
 void Gradient_loop_functions::PostStep() {
   simulationTime++;
-  if(rootController->IsFinished()) {
-    if(!constellation_setup) {
-      LOG << "Setup:" << simulationTime << endl;
-      cout << "Setup:" << simulationTime << endl;
-      constellation_setup = true;
-      cout << "Fullshells:" << fullshells << endl;
+  for (int i = 0; i < droneToFail.size(); i++) {
+    int failId = droneToFail.at(i);
+    int failTime = droneToFailAtTime.at(i);
+
+    if (simulationTime == failTime) {
+      controllers.at(failId)->fail();
     }
-    argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex++, 2 * fullshells * rmax);
-    rootController->AddRecursiveWaypoint(waypoint);
-    waypoints.push_back(waypoint);
   }
+
+  if (rootController->failureDetected()) {
+    LOG << "Healing" << endl;
+    healFailedSwarm();
+  } else {
+    if (rootController->IsFinished()) {
+      if (!constellation_setup) {
+        LOG << "Setup:" << simulationTime << endl;
+        LOG << "Fullshells:" << fullshells << endl;
+        constellation_setup = true;
+      }
+      argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(++spiralIndex, 2.0 * (fullshells - 0.75) * rmax);
+      rootController->AddRecursiveWaypoint(waypoint);
+      waypoints.push_back(waypoint);
+    }
+  }
+}
+
+void Gradient_loop_functions::healFailedSwarm() {
+
+  Finishable* lastMovement = new EmptyMovement();
+  for(Spiri_controller* failedController : getNextFailures()) {
+    if (failedController->heir == failedController->NO_HEIR) {
+      // Remove from swarm
+      Spiri_controller *parent = controllers.at(failedController->parentId);
+      parent->removeChild(failedController->id);
+    } else {
+      argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.75) * rmax);
+      Movement* replaceWithHeir = new ReplaceWithHeir(failedController, waypoint, &controllers);
+      ThenMovement* waitForPrevious = new ThenMovement(lastMovement, replaceWithHeir);
+      failedController->AddMovement(waitForPrevious);
+      lastMovement = waitForPrevious;
+    }
+  }
+}
+
+vector<Spiri_controller*> Gradient_loop_functions::getNextFailures() {
+
+  // Find deepest failure by breadth first search and finding last failure
+  std::list<int> nodes;
+
+  vector<Spiri_controller*> failedVector;
+
+  nodes.push_back(rootController->id);
+
+  while(!nodes.empty()) {
+    Spiri_controller* node = controllers.at(nodes.front());
+    nodes.pop_front();
+
+    if(node->failed) {
+      failedVector.push_back(node);
+      node->failed = false;
+    }
+
+    for(int childId : node->children) {
+      nodes.push_back(childId);
+    }
+  }
+
+  std::reverse(failedVector.begin(), failedVector.end());
+
+  return failedVector;
 }
 
 argos::CVector3 Gradient_loop_functions::buildArchimedesSpiralWaypoint(int index, double radius) {
@@ -122,11 +188,7 @@ void Gradient_loop_functions::Reset() {
   spiralIndex = 0;
   simulationTime = 0;
 
-  for(int i = 0; i < 1000; i++) {
-    for(int j = 0; j < 1000; j++) {
-      coverage[i][j] = false;
-    }
-  }
+  initCoverage();
 }
 
 bool Gradient_loop_functions::IsExperimentFinished() {
@@ -137,6 +199,30 @@ bool Gradient_loop_functions::IsExperimentFinished() {
 void Gradient_loop_functions::PostExperiment() {
   LOG << "Time:" << simulationTime << endl;
   cout << "Time:" << simulationTime << endl;
+}
+
+void Gradient_loop_functions::loadDroneFailures(string droneFailureString) {
+
+  vector<string> droneFailureStringTuples;
+  Tokenize(droneFailureString, droneFailureStringTuples, ";");
+
+  for (long i = 0; i < droneFailureStringTuples.size(); i++) {
+    vector<string> failureTuple;
+    Tokenize(droneFailureStringTuples.at(i), failureTuple, ",");
+
+    if(failureTuple.size() >= 2) {
+      droneToFail.push_back(atoi(failureTuple.at(0).c_str()));
+      droneToFailAtTime.push_back(atoi(failureTuple.at(1).c_str()));
+    }
+  }
+}
+
+void Gradient_loop_functions::initCoverage() {
+  for(int i = 0; i < 1000; i++) {
+    for(int j = 0; j < 1000; j++) {
+      coverage[i][j] = false;
+    }
+  }
 }
 
 REGISTER_LOOP_FUNCTIONS(Gradient_loop_functions, "Gradient_loop_functions")

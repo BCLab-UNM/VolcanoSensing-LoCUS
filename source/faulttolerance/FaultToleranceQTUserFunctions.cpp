@@ -21,12 +21,11 @@ void Gradient_qt_user_functions::DrawOnArena(CFloorEntity& entity) {
     size_t unEnd = 1;
     while(unEnd < loopFunctions.GetWaypoints().size()) {
       DrawRay(CRay3(loopFunctions.GetWaypoints()[unEnd],
-                    loopFunctions.GetWaypoints()[unStart]));
+                    loopFunctions.GetWaypoints()[unStart]), CColor::RED, 3.0f);
       ++unStart;
       ++unEnd;
     }
   }
-
 
   for(int i = 0; i < 1000; i++) {
     for(int j = 0; j < 1000; j++) {

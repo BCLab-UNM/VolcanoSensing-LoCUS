@@ -5,8 +5,9 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_quadrotor_position_actuator.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 #include "Movement.h"
+#include "Finishable.h"
 
-class MoveToPosition : public virtual Movement {
+class MoveToPosition : public virtual Movement, public virtual Finishable {
 
 public:
 
@@ -17,9 +18,11 @@ public:
 
   void init(argos::CVector3 target);
   bool step();
+  bool isFinished();
 
 private:
 
+  bool finished = false;
   bool commanded = false;
   argos::CVector3 target;
   argos::CCI_QuadRotorPositionActuator* positionActuator;

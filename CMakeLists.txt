@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(Gradient-ARGoS)
+project(Fault-Tolerance-Drones-ARGoS)
+
+set(CMAKE_BUILD_TYPE Debug)
 
 # Use C+11
 set(CMAKE_CXX_FLAGS "-std=c++0x")

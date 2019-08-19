@@ -6,6 +6,7 @@
 #include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
 #include <argos3/plugins/robots/spiri/simulator/spiri_entity.h>
 #include "SpiriController.h"
+#include <list>
 
 using namespace argos;
 using namespace std;
@@ -33,6 +34,8 @@ private:
   int fullshells = 1;
 	int spiralIndex = 0;
 	bool constellation_setup = false;
+	vector<int> droneToFail;
+	vector<int> droneToFailAtTime;
 	Spiri_controller* rootController;
   std::vector<Spiri_controller*> controllers;
   std::vector<argos::CVector3> waypoints;
@@ -40,6 +43,14 @@ private:
   long simulationTime = 0;
   int calculateParent(int level, argos::CVector3 childOffset);
 	argos::CVector3 buildArchimedesSpiralWaypoint(int index, double radius);
+
+  void loadDroneFailures(string basic_string);
+
+  void initCoverage();
+
+  void healFailedSwarm();
+
+	vector<Spiri_controller*> getNextFailures();
 };
 
 #endif /* GRADIENT_LOOP_FUNCTIONS_H_ */

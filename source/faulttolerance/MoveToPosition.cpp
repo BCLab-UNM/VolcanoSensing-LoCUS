@@ -12,7 +12,12 @@ bool MoveToPosition::step() {
   }
   argos::CVector3 positionVector = compassSensor->GetReading().Position;
 
-  return fabs(positionVector.GetX() - (target.GetX())) < 0.1 &&
-  fabs(positionVector.GetY() - (target.GetY())) < 0.1 &&
-  fabs(positionVector.GetZ() - (target.GetZ() / 10)) < 0.1;
+  finished = fabs(positionVector.GetX() - (target.GetX())) < 0.1 &&
+          fabs(positionVector.GetY() - (target.GetY())) < 0.1;
+
+  return finished;
+}
+
+bool MoveToPosition::isFinished() {
+  return finished;
 }

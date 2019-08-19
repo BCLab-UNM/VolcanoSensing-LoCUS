@@ -5,7 +5,7 @@
 add_library(Gradient_loop_functions MODULE FaultToleranceLoopFunctions.h
 		FaultToleranceLoopFunctions.cpp
 		FaultToleranceQTUserFunctions.h
-		FaultToleranceQTUserFunctions.cpp)
+		FaultToleranceQTUserFunctions.cpp ThenMovement.cpp ThenMovement.h ReplaceWithHeir.cpp ReplaceWithHeir.h ParallelMovement.cpp ParallelMovement.h)
 
 add_library(Spiri_controller SHARED
 		SpiriController.h
@@ -19,7 +19,12 @@ add_library(Spiri_controller SHARED
 		Delay.h
 		WaitForChildren.cpp
 		WaitForChildren.h
-		)
+		EmptyMovement.h
+        Finishable.h
+		ReplaceWithHeir.cpp
+		ReplaceWithHeir.h
+		ParallelMovement.cpp
+		ParallelMovement.h)
 
 ###############################################
 # link shared object files to dependencies
