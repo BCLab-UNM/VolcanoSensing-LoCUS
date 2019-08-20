@@ -15,11 +15,6 @@ bool ReplaceWithHeir::step() {
   if(finished) {
     Spiri_controller *heir = controllers->at(controllerToReplace->heir);
     heir->replace(controllerToReplace);
-    Spiri_controller *parent = controllers->at(controllerToReplace->parentId);
-    while(parent->parentId != parent->NO_HEIR) {
-      parent = controllers->at(parent->parentId);
-    }
-    parent->SetupHeir();
   }
 
   return finished;

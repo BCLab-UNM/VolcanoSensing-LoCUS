@@ -75,15 +75,6 @@ MoveToPosition* Spiri_controller::CreateOffsetMovement(CVector3 waypoint) {
   return moveTo;
 }
 
-
-
-Movement *Spiri_controller::CreateMovement(CVector3 waypoint) {
-  MoveToPosition* moveTo = new MoveToPosition(positionActuator, compassSensor);
-  moveTo->init(argos::CVector3(waypoint.GetX(), waypoint.GetY(), waypoint.GetZ()));
-
-  return moveTo;
-}
-
 void Spiri_controller::AddMovement(Movement *move) {
   movement->add(move);
 }
@@ -102,17 +93,23 @@ void Spiri_controller::addCoverage(CVector3 waypoint) {
   }
 }
 
-int Spiri_controller::SetupHeir() {
+void Spiri_controller::SetupHeir() {
   heir = GetHeir();
 
-  childHeir.clear();
   for (int childId : children) {
     Spiri_controller *child = controllers->at(childId);
-    childHeir.push_back(child->SetupHeir());
-    child->parentHeir = heir;
+    child->SetupHeir();
+  }
+}
+
+void Spiri_controller::SetupParentHeir() {
+  heir = GetHeir();
+
+  if(parentId != NO_HEIR) {
+    Spiri_controller *parent = controllers->at(parentId);
+    parent->SetupParentHeir();
   }
 
-  return heir;
 }
 
 int Spiri_controller::GetHeir() {
@@ -182,17 +179,17 @@ void Spiri_controller::replace(Spiri_controller *target) {
 
   Spiri_controller *parent = controllers->at(parentId);
   parent->removeChild(id);
-  replaceId = target->id;
   offset = target->offset;
   children.clear();
   for(int child : target->children) {
     children.push_back(child);
     controllers->at(child)->SetParent(id);
   }
-  //SetupHeir();
   target->heir = NO_HEIR;
   Spiri_controller *targetParent = controllers->at(target->parentId);
   targetParent->replaceChild(target->id, id);
+  parentId = target->parentId;
+  parent->SetupParentHeir();
 }
 
 bool Spiri_controller::failureDetected() {

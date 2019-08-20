@@ -31,7 +31,7 @@ public:
   int GetLevel() { return level;}
   argos::CVector3 GetOffset() { return offset;}
   int GetIdentifier() { return id;}
-  int SetupHeir();
+  void SetupHeir();
   void replaceChild(int toReplace, int replacement);
   void fail() ;
 
@@ -43,13 +43,10 @@ public:
 
   int NO_HEIR = -1;
   int heir = NO_HEIR;
-  int parentHeir = NO_HEIR;
   int id;
   int parentId = NO_HEIR;
-  int replaceId = NO_HEIR;
   bool failed = false;
   std::vector<int> children;
-  std::vector<int> childHeir;
   argos::CVector3 offset;
 
   int GetMinimumHeight();
@@ -60,7 +57,7 @@ public:
 
   void removeChild(int i);
 
-  Movement *CreateMovement(CVector3 vector3);
+  void SetupParentHeir();
 
 private:
 

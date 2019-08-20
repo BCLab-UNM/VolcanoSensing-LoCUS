@@ -130,7 +130,8 @@ void Gradient_loop_functions::healFailedSwarm() {
       // Remove from swarm
       Spiri_controller *parent = controllers.at(failedController->parentId);
       parent->removeChild(failedController->id);
-      rootController->SetupHeir();
+      parent->SetupParentHeir();
+      //rootController->SetupHeir();
     } else {
       argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.75) * rmax);
       Movement* replaceWithHeir = new ReplaceWithHeir(failedController, waypoint, &controllers);
