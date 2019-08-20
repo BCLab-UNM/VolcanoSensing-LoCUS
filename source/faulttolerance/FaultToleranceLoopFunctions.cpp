@@ -78,7 +78,7 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
 }
 
 int Gradient_loop_functions::calculateParent(int level, argos::CVector3 childOffset) {
-  int closest = 0;
+  int closest = -1;
   double closestDistance = 1000000;
   for(long i = 0; i < controllers.size(); i++) {
     auto &controller = controllers.at(i);
@@ -130,6 +130,7 @@ void Gradient_loop_functions::healFailedSwarm() {
       // Remove from swarm
       Spiri_controller *parent = controllers.at(failedController->parentId);
       parent->removeChild(failedController->id);
+      rootController->SetupHeir();
     } else {
       argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.75) * rmax);
       Movement* replaceWithHeir = new ReplaceWithHeir(failedController, waypoint, &controllers);

@@ -45,7 +45,7 @@ public:
   int heir = NO_HEIR;
   int parentHeir = NO_HEIR;
   int id;
-  int parentId;
+  int parentId = NO_HEIR;
   int replaceId = NO_HEIR;
   bool failed = false;
   std::vector<int> children;
