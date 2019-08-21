@@ -37,6 +37,10 @@ void Spiri_controller::AddChild(int childId) {
   children.push_back(childId);
 }
 
+void Spiri_controller::AddChildOffset(argos::CVector3 offset) {
+  childLocations.push_back(offset);
+}
+
 void Spiri_controller::setupPosition() {
   movement->reset();
   MoveToPosition* starting_position = new MoveToPosition(positionActuator, compassSensor);
@@ -173,6 +177,7 @@ void Spiri_controller::replaceChild(int toReplace, int replacement) {
 
 void Spiri_controller::removeChild(int toRemove) {
   children.erase(std::remove(children.begin(), children.end(), toRemove));
+  SetupParentHeir();
 }
 
 void Spiri_controller::replace(Spiri_controller *target) {

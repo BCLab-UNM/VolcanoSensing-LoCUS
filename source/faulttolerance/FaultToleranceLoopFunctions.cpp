@@ -21,57 +21,57 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
   CSpace::TMapPerType& spiris = GetSpace().GetEntitiesByType("spiri");
 
-  int i = 0;
+  bool first = true;
   for (auto &spiri : spiris) {
-    CSpiriEntity& spiriEntity = *any_cast<CSpiriEntity*>(spiri.second);
-    auto & controller = (Spiri_controller&)(spiriEntity.GetControllableEntity().GetController());
+    CSpiriEntity &spiriEntity = *any_cast<CSpiriEntity *>(spiri.second);
+    auto &controller = (Spiri_controller &) (spiriEntity.GetControllableEntity().GetController());
 
-    if(i == 0) {
+    if (first) {
       rootController = &controller;
+      first = false;
     }
 
     controllers.push_back(&controller);
-
-    int level = 0;
-    int innerswarmcount = 0;
-    int levelchildrencount = 0;
-    double radius = 0;
-    while (innerswarmcount < i) {
-      level = level + 1;
-      radius = ((level + 1) * rmax);
-      double levelangle = 2 * asin(rmin / radius);
-      levelchildrencount = int((M_PI * 2) / levelangle);
-      innerswarmcount = innerswarmcount + levelchildrencount;
-    }
-
-    if(fullshells < level) {
-      fullshells = level;
-    }
-
-    double shell_angle = 0;
-    if(levelchildrencount > 0) {
-      shell_angle = (M_PI * 2) / levelchildrencount;
-      radius = radius - rmax;
-    }
-
-    double angle = (i - (innerswarmcount - levelchildrencount)) * shell_angle;
-    double x = radius * cos(angle);
-    double y = radius * sin(angle);
-
-    argos::CVector3 offset = argos::CVector3(x, y, 10);
-
-    controller.Setup(i, level, offset, &controllers);
-
-    i++;
   }
 
-  for (auto &controller : controllers) {
-    if(controller->GetLevel() > 0) {
-      int parentId = calculateParent(controller->GetLevel(), controller->GetOffset());
-      controller->SetParent(parentId);
-      controllers.at(parentId)->AddChild(controller->GetIdentifier());
+  int innerswarmcount = 1;
+  rootController->Setup(0, 0, argos::CVector3(0, 0, 10), &controllers);
+
+  bool foundChild = true;
+  for (int level = 1; foundChild; level++) {
+    foundChild = false;
+
+    double radius = level * rmax;
+    double levelangle = asin(rmin / radius);
+    int levelchildrencount = int((M_PI * 2) / levelangle);
+
+    double shell_angle = (M_PI * 2) / levelchildrencount;
+
+    for(int levelCounter = 0; levelCounter < levelchildrencount; levelCounter++) {
+
+      double angle = levelCounter * shell_angle;
+      double x = radius * cos(angle);
+      double y = radius * sin(angle);
+
+      argos::CVector3 offset = argos::CVector3(x, y, 10);
+
+      int parentId = calculateParent(level, offset);
+
+      if(parentId != -1) {
+        if(innerswarmcount + levelCounter < controllers.size()) {
+          auto &controller = controllers.at(innerswarmcount + levelCounter);
+          controller->Setup(innerswarmcount + levelCounter, level, offset, &controllers);
+          controller->SetParent(parentId);
+          controllers.at(parentId)->AddChild(controller->GetIdentifier());
+          foundChild = true;
+        }
+        controllers.at(parentId)->AddChildOffset(offset);
+      }
     }
+
+    innerswarmcount = innerswarmcount + levelchildrencount;
   }
+
 
   rootController->SetupHeir();
   fullshells = rootController->GetMinimumHeight();
@@ -130,8 +130,6 @@ void Gradient_loop_functions::healFailedSwarm() {
       // Remove from swarm
       Spiri_controller *parent = controllers.at(failedController->parentId);
       parent->removeChild(failedController->id);
-      parent->SetupParentHeir();
-      //rootController->SetupHeir();
     } else {
       argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.75) * rmax);
       Movement* replaceWithHeir = new ReplaceWithHeir(failedController, waypoint, &controllers);

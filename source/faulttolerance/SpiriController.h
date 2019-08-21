@@ -28,6 +28,7 @@ public:
   void Setup(int id, int level, argos::CVector3 offset, std::vector<Spiri_controller*>* controllers);
   void SetParent(int parentId);
   void AddChild(int childId);
+  void AddChildOffset(argos::CVector3 offset);
   int GetLevel() { return level;}
   argos::CVector3 GetOffset() { return offset;}
   int GetIdentifier() { return id;}
@@ -47,6 +48,7 @@ public:
   int parentId = NO_HEIR;
   bool failed = false;
   std::vector<int> children;
+  std::vector<CVector3> childLocations;
   argos::CVector3 offset;
 
   int GetMinimumHeight();
