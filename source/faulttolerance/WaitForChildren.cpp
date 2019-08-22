@@ -4,8 +4,8 @@
 bool WaitForChildren::step() {
   bool finished = true;
 
-  for(int childId : root->GetChildren()) {
-    finished &= controllers->at(childId)->IsFinished();
+  for(Spiri_controller* childController : root->getChildrenControllers()) {
+    finished &= childController->IsFinished();
   }
 
   return finished;

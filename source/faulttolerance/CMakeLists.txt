@@ -24,7 +24,14 @@ add_library(Spiri_controller SHARED
 		ReplaceWithHeir.cpp
 		ReplaceWithHeir.h
 		ParallelMovement.cpp
-		ParallelMovement.h)
+		ParallelMovement.h
+		SwarmLocation.h
+		ControllerBase.h
+		SwarmManager.cpp
+		SwarmManager.h
+		SwarmLocationImpl.cpp
+		SwarmLocationImpl.h
+		)
 
 ###############################################
 # link shared object files to dependencies

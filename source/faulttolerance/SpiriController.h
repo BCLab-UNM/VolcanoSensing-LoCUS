@@ -13,53 +13,42 @@
 #include "MovementVector.h"
 #include "MoveToPosition.h"
 #include "Delay.h"
+#include "SwarmManager.h"
+#include "ControllerBase.h"
 #include <math.h>
 
 using namespace argos;
 using namespace std;
 
-class Spiri_controller : public CCI_Controller, public CLoopFunctions {
+class Spiri_controller : public CCI_Controller, public CLoopFunctions, public virtual ControllerBase {
 
 public:
   void Init(TConfigurationNode& node);
   void ControlStep();
   bool IsFinished();
   void Reset();
-  void Setup(int id, int level, argos::CVector3 offset, std::vector<Spiri_controller*>* controllers);
-  void SetParent(int parentId);
-  void AddChild(int childId);
-  void AddChildOffset(argos::CVector3 offset);
-  int GetLevel() { return level;}
-  argos::CVector3 GetOffset() { return offset;}
-  int GetIdentifier() { return id;}
+  void Setup(int id, SwarmLocation *location, std::vector<Spiri_controller*>* controllers, SwarmManager* swarmManager);
   void SetupHeir();
-  void replaceChild(int toReplace, int replacement);
-  void fail() ;
-
-  vector<int> GetChildren() { return children; }
-
+  void fail();
+  void Balance();
+  Spiri_controller* RemoveLeaf();
+  bool CanInsert();
+  void Insert(Spiri_controller* child);
   void AddRecursiveWaypoint(CVector3 waypoint);
   void AddMovement(Movement *move);
   MoveToPosition* CreateOffsetMovement(CVector3 waypoint);
-
-  int NO_HEIR = -1;
-  int heir = NO_HEIR;
-  int id;
-  int parentId = NO_HEIR;
-  bool failed = false;
-  std::vector<int> children;
-  std::vector<CVector3> childLocations;
-  argos::CVector3 offset;
-
-  int GetMinimumHeight();
-
+  int GetMinimumDepth();
   void replace(Spiri_controller *pController);
-
   bool failureDetected();
-
-  void removeChild(int i);
-
   void SetupParentHeir();
+
+  Spiri_controller *getParentController();
+  vector<Spiri_controller *> getChildrenControllers();
+  Spiri_controller *heir = NULL;
+  int id;
+  bool failed = false;
+  SwarmLocation *location;
+  SwarmManager* swarmManager;
 
 private:
 
@@ -68,16 +57,14 @@ private:
   argos::CCI_PositioningSensor* compassSensor;
   argos::CCI_QuadRotorPositionActuator* positionActuator;
   std::vector<Spiri_controller*>* controllers;
-  int level;
   void setupPosition() ;
   void addCoverage(CVector3 waypoint);
-  int GetHeir();
-  int GetSuccessor();
-  int GetPredecessor();
-  int leftmost();
-  int rightmost();
-
-
+  Spiri_controller* GetHeir();
+  Spiri_controller* GetSuccessor();
+  Spiri_controller* GetPredecessor();
+  Spiri_controller* leftmost();
+  Spiri_controller* rightmost();
+  int GetMaximumDepth();
 };
 
 #endif /* SPIRI_CONTROLLER_H_ */

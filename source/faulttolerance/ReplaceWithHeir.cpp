@@ -4,8 +4,8 @@
 bool ReplaceWithHeir::step() {
 
   if(!setup) {
-    Spiri_controller *heir = controllers->at(controllerToReplace->heir);
-    heir->offset = controllerToReplace->offset;
+    Spiri_controller *heir = controllerToReplace->heir;
+    // TODO: heir->offset = controllerToReplace->offset;
     replacementMovement = heir->CreateOffsetMovement(waypoint);
     setup = true;
   }
@@ -13,7 +13,7 @@ bool ReplaceWithHeir::step() {
   finished = replacementMovement->step();
 
   if(finished) {
-    Spiri_controller *heir = controllers->at(controllerToReplace->heir);
+    Spiri_controller *heir = controllerToReplace->heir;
     heir->replace(controllerToReplace);
   }
 

@@ -6,6 +6,7 @@
 #include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
 #include <argos3/plugins/robots/spiri/simulator/spiri_entity.h>
 #include "SpiriController.h"
+#include "SwarmManager.h"
 #include <list>
 
 using namespace argos;
@@ -39,9 +40,9 @@ private:
 	Spiri_controller* rootController;
   std::vector<Spiri_controller*> controllers;
   std::vector<argos::CVector3> waypoints;
+  SwarmManager* swarmManager;
 
   long simulationTime = 0;
-  int calculateParent(int level, argos::CVector3 childOffset);
 	argos::CVector3 buildArchimedesSpiralWaypoint(int index, double radius);
 
   void loadDroneFailures(string basic_string);

@@ -19,6 +19,8 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
   initCoverage();
 
+  swarmManager = new SwarmManager(rmin, rmax);
+
   CSpace::TMapPerType& spiris = GetSpace().GetEntitiesByType("spiri");
 
   bool first = true;
@@ -34,64 +36,15 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
     controllers.push_back(&controller);
   }
 
-  int innerswarmcount = 1;
-  rootController->Setup(0, 0, argos::CVector3(0, 0, 10), &controllers);
-
-  bool foundChild = true;
-  for (int level = 1; foundChild; level++) {
-    foundChild = false;
-
-    double radius = level * rmax;
-    double levelangle = asin(rmin / radius);
-    int levelchildrencount = int((M_PI * 2) / levelangle);
-
-    double shell_angle = (M_PI * 2) / levelchildrencount;
-
-    for(int levelCounter = 0; levelCounter < levelchildrencount; levelCounter++) {
-
-      double angle = levelCounter * shell_angle;
-      double x = radius * cos(angle);
-      double y = radius * sin(angle);
-
-      argos::CVector3 offset = argos::CVector3(x, y, 10);
-
-      int parentId = calculateParent(level, offset);
-
-      if(parentId != -1) {
-        if(innerswarmcount + levelCounter < controllers.size()) {
-          auto &controller = controllers.at(innerswarmcount + levelCounter);
-          controller->Setup(innerswarmcount + levelCounter, level, offset, &controllers);
-          controller->SetParent(parentId);
-          controllers.at(parentId)->AddChild(controller->GetIdentifier());
-          foundChild = true;
-        }
-        controllers.at(parentId)->AddChildOffset(offset);
-      }
-    }
-
-    innerswarmcount = innerswarmcount + levelchildrencount;
+  for(int i = 0; i < controllers.size(); i++) {
+    SwarmLocation *location = swarmManager->GetLocation(i);
+    Spiri_controller *controller = controllers.at(i);
+    controller->Setup(i, location, &controllers, swarmManager);
+    swarmManager->UpdateLocation(controller, location);
   }
-
 
   rootController->SetupHeir();
-  fullshells = rootController->GetMinimumHeight();
-}
-
-int Gradient_loop_functions::calculateParent(int level, argos::CVector3 childOffset) {
-  int closest = -1;
-  double closestDistance = 1000000;
-  for(long i = 0; i < controllers.size(); i++) {
-    auto &controller = controllers.at(i);
-
-    argos::CVector3 parentOffset = controller->GetOffset();
-
-    double relativeDistance = (parentOffset - childOffset).Length();
-    if(controller->GetLevel() == level - 1 && relativeDistance < closestDistance) {
-      closestDistance = relativeDistance;
-      closest = i;
-    }
-  }
-  return closest;
+  fullshells = rootController->GetMinimumDepth();
 }
 
 void Gradient_loop_functions::PostStep() {
@@ -126,13 +79,15 @@ void Gradient_loop_functions::healFailedSwarm() {
 
   Finishable* lastMovement = new EmptyMovement();
   for(Spiri_controller* failedController : getNextFailures()) {
-    if (failedController->heir == failedController->NO_HEIR) {
+    if (failedController->heir == NULL) {
       // Remove from swarm
-      Spiri_controller *parent = controllers.at(failedController->parentId);
-      parent->removeChild(failedController->id);
+      Spiri_controller *parent = failedController->getParentController();
+      swarmManager->RemoveChild(failedController);
+      failedController->location = NULL;
+      parent->Balance();
     } else {
       argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.75) * rmax);
-      Movement* replaceWithHeir = new ReplaceWithHeir(failedController, waypoint, &controllers);
+      Movement* replaceWithHeir = new ReplaceWithHeir(failedController, waypoint, &controllers, swarmManager);
       ThenMovement* waitForPrevious = new ThenMovement(lastMovement, replaceWithHeir);
       failedController->AddMovement(waitForPrevious);
       lastMovement = waitForPrevious;
@@ -143,14 +98,14 @@ void Gradient_loop_functions::healFailedSwarm() {
 vector<Spiri_controller*> Gradient_loop_functions::getNextFailures() {
 
   // Find deepest failure by breadth first search and finding last failure
-  std::list<int> nodes;
+  std::list<Spiri_controller*> nodes;
 
   vector<Spiri_controller*> failedVector;
 
-  nodes.push_back(rootController->id);
+  nodes.push_back(rootController);
 
   while(!nodes.empty()) {
-    Spiri_controller* node = controllers.at(nodes.front());
+    Spiri_controller* node = nodes.front();
     nodes.pop_front();
 
     if(node->failed) {
@@ -158,8 +113,8 @@ vector<Spiri_controller*> Gradient_loop_functions::getNextFailures() {
       node->failed = false;
     }
 
-    for(int childId : node->children) {
-      nodes.push_back(childId);
+    for(ControllerBase* childController : swarmManager->GetChildren(node)) {
+      nodes.push_back(dynamic_cast<Spiri_controller*>(childController));
     }
   }
 

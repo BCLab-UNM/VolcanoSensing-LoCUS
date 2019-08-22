@@ -7,10 +7,11 @@
 class ReplaceWithHeir : public virtual Movement, public virtual Finishable{
 
 public:
-  ReplaceWithHeir(Spiri_controller *controllerToReplace, CVector3 waypoint, std::vector<Spiri_controller*>* controllers):
+  ReplaceWithHeir(Spiri_controller *controllerToReplace, CVector3 waypoint, std::vector<Spiri_controller*>* controllers, SwarmManager* swarmManager):
                   controllerToReplace(controllerToReplace),
                   waypoint(waypoint),
-                  controllers(controllers){}
+                  controllers(controllers),
+                  swarmManager(swarmManager){}
 
   bool step();
   bool isFinished();
@@ -22,6 +23,7 @@ private:
   Spiri_controller* controllerToReplace;
   argos::CVector3 waypoint;
   std::vector<Spiri_controller*>* controllers;
+  SwarmManager* swarmManager;
 };
 
 
