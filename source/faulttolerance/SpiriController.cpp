@@ -310,12 +310,13 @@ Spiri_controller* Spiri_controller::rightmost() {
 }
 
 void Spiri_controller::replace(Spiri_controller *target) {
-  Spiri_controller *parent = getParentController();
+  SwarmLocation* parentLocation = location->GetParent();
   swarmManager->RemoveChild(target);
   location = target->location;
   swarmManager->UpdateLocation(this, location);
   target->location = NULL;
   target->heir = NULL;
+  Spiri_controller *parent = dynamic_cast<Spiri_controller*>(swarmManager->GetValue(parentLocation));
   parent->SetupParentHeir();
   parent->Balance();
 }
