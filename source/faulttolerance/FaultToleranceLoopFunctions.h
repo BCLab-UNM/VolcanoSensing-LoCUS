@@ -27,6 +27,8 @@ public:
   bool coverage[1000][1000];
   double rmax = 2;
 
+  void SetRootController(Spiri_controller *nextRootController);
+
 private:
 
   double rmin = 1;

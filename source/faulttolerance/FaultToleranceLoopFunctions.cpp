@@ -3,6 +3,7 @@
 #include "EmptyMovement.h"
 #include "ThenMovement.h"
 #include "ReplaceWithHeir.h"
+#include "ReplaceRootAction.h"
 
 void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
@@ -93,6 +94,12 @@ void Gradient_loop_functions::healFailedSwarm() {
       ThenMovement* waitForPrevious = new ThenMovement(lastMovement, replaceWithHeir);
       failedController->AddMovement(waitForPrevious);
       lastMovement = waitForPrevious;
+
+      if(failedController == rootController) {
+        ThenMovement* replaceRoot = new ThenMovement(lastMovement, new ReplaceRootAction(this, failedController->heir));
+        failedController->AddMovement(replaceRoot);
+        lastMovement = replaceRoot;
+      }
     }
   }
 }
@@ -180,6 +187,10 @@ void Gradient_loop_functions::initCoverage() {
       coverage[i][j] = false;
     }
   }
+}
+
+void Gradient_loop_functions::SetRootController(Spiri_controller *nextRootController) {
+  rootController = nextRootController;
 }
 
 REGISTER_LOOP_FUNCTIONS(Gradient_loop_functions, "Gradient_loop_functions")

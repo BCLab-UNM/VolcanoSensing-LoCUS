@@ -5,7 +5,7 @@
 add_library(Gradient_loop_functions MODULE FaultToleranceLoopFunctions.h
 		FaultToleranceLoopFunctions.cpp
 		FaultToleranceQTUserFunctions.h
-		FaultToleranceQTUserFunctions.cpp ThenMovement.cpp ThenMovement.h ReplaceWithHeir.cpp ReplaceWithHeir.h ParallelMovement.cpp ParallelMovement.h)
+		FaultToleranceQTUserFunctions.cpp ThenMovement.cpp ThenMovement.h ReplaceWithHeir.cpp ReplaceWithHeir.h ParallelMovement.cpp ParallelMovement.h ReplaceRootAction.cpp ReplaceRootAction.h)
 
 add_library(Spiri_controller SHARED
 		SpiriController.h

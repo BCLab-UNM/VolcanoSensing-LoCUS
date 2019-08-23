@@ -82,12 +82,14 @@ std::vector<SwarmLocation *> *SwarmManager::GetChildrenLocations(SwarmLocation *
 std::vector<ControllerBase*> SwarmManager::GetChildren(ControllerBase* parent) {
   std::vector<ControllerBase*> childrenValues;
 
-  SwarmLocation* parentLocation = locationAssociation.at(parent);
-  std::vector<SwarmLocation*>* childrenLocations = GetChildrenLocations(parentLocation);
-  for(SwarmLocation* location : *childrenLocations) {
-    ControllerBase* childValue = GetValue(location);
-    if(childValue != NULL) {
-      childrenValues.push_back(childValue);
+  if(locationAssociation.find(parent) != locationAssociation.end()) {
+    SwarmLocation* parentLocation = locationAssociation.at(parent);
+    std::vector<SwarmLocation*>* childrenLocations = GetChildrenLocations(parentLocation);
+    for(SwarmLocation* location : *childrenLocations) {
+      ControllerBase* childValue = GetValue(location);
+      if(childValue != NULL) {
+        childrenValues.push_back(childValue);
+      }
     }
   }
 
