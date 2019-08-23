@@ -33,12 +33,12 @@ public:
   void Balance();
   Spiri_controller* RemoveLeaf();
   bool CanInsert();
-  void Insert(Spiri_controller* child);
+  void Insert(Spiri_controller *child);
   void AddRecursiveWaypoint(CVector3 waypoint);
   void AddMovement(Movement *move);
-  MoveToPosition* CreateOffsetMovement(CVector3 waypoint);
+  MoveToPosition* CreateOffsetMovement(CVector3 waypoint, CVector3 offsetPosition);
   int GetMinimumDepth();
-  void replace(Spiri_controller *pController);
+  void replace(Spiri_controller *pController, CVector3 waypoint);
   bool failureDetected();
   void SetupParentHeir();
 

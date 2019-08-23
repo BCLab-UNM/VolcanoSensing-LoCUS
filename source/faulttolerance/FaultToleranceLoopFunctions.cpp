@@ -61,6 +61,7 @@ void Gradient_loop_functions::PostStep() {
   if (rootController->failureDetected()) {
     LOG << "Healing" << endl;
     healFailedSwarm();
+    spiralIndex--;
   } else {
     if (rootController->IsFinished()) {
       if (!constellation_setup) {
@@ -78,15 +79,16 @@ void Gradient_loop_functions::PostStep() {
 void Gradient_loop_functions::healFailedSwarm() {
 
   Finishable* lastMovement = new EmptyMovement();
+  argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.75) * rmax);
   for(Spiri_controller* failedController : getNextFailures()) {
     if (failedController->heir == NULL) {
       // Remove from swarm
       Spiri_controller *parent = failedController->getParentController();
       swarmManager->RemoveChild(failedController);
       failedController->location = NULL;
+      failedController->heir = NULL;
       parent->Balance();
     } else {
-      argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.75) * rmax);
       Movement* replaceWithHeir = new ReplaceWithHeir(failedController, waypoint, &controllers, swarmManager);
       ThenMovement* waitForPrevious = new ThenMovement(lastMovement, replaceWithHeir);
       failedController->AddMovement(waitForPrevious);

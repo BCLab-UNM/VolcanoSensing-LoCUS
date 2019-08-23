@@ -1,7 +1,3 @@
-//
-// Created by john on 8/19/19.
-//
-
 #include "ParallelMovement.h"
 
 bool ParallelMovement::step() {

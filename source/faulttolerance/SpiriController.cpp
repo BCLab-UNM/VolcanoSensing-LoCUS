@@ -42,7 +42,7 @@ void Spiri_controller::setupPosition() {
 void Spiri_controller::AddRecursiveWaypoint(CVector3 waypoint) {
   addCoverage(waypoint);
 
-  movement->add(CreateOffsetMovement(waypoint));
+  movement->add(CreateOffsetMovement(waypoint, location->getOffset()));
   WaitForChildren* wait = new WaitForChildren(this, controllers);
   movement->add(wait);
 
@@ -51,12 +51,11 @@ void Spiri_controller::AddRecursiveWaypoint(CVector3 waypoint) {
   }
 }
 
-MoveToPosition* Spiri_controller::CreateOffsetMovement(CVector3 waypoint) {
+MoveToPosition* Spiri_controller::CreateOffsetMovement(CVector3 waypoint, CVector3 offsetPosition) {
   MoveToPosition* moveTo = new MoveToPosition(positionActuator, compassSensor);
-  CVector3 offset = location->getOffset();
-  moveTo->init(argos::CVector3(waypoint.GetX() + offset.GetX(),
-                               waypoint.GetY() + offset.GetY(),
-                               waypoint.GetZ() + offset.GetZ()));
+  moveTo->init(argos::CVector3(waypoint.GetX() + offsetPosition.GetX(),
+                               waypoint.GetY() + offsetPosition.GetY(),
+                               waypoint.GetZ() + offsetPosition.GetZ()));
 
   return moveTo;
 }
@@ -97,45 +96,19 @@ void Spiri_controller::SetupParentHeir() {
 }
 
 void Spiri_controller::Balance() {
+
   if(location->getMaxChildrenSize() > 1) {
-    int maxDepth = 0;
-    Spiri_controller* maxDepthChild = NULL;
-    int minDepth = 100000;
-    Spiri_controller* minDepthChild = NULL;
+    int maxDepth;
+    Spiri_controller* maxDepthChild;
+    int minDepth;
+    Spiri_controller* minDepthChild;
 
-    cout << "Balance at " << id << ": ";
-    for(Spiri_controller* childController : getChildrenControllers()) {
-      int maximumControllerDepth = childController->GetMaximumDepth();
-      if (maximumControllerDepth > maxDepth) {
-        maxDepth = maximumControllerDepth;
-        maxDepthChild = childController;
-      }
-      if(childController->CanInsert()) {
-        int minimumControllerDepth = childController->GetMinimumDepth();
-        cout << childController << ":" << maximumControllerDepth << "\\" << minimumControllerDepth << " ";
-        if (minimumControllerDepth < minDepth) {
-          minDepth = minimumControllerDepth;
-          minDepthChild = childController;
-        }
-      } else {
-        cout << "X ";
-      }
-    }
-    cout << endl;
-
-    while(maxDepth - 1 > minDepth) {
-
-      Spiri_controller* childToMove = maxDepthChild->RemoveLeaf();
-      cout << id << "Moving " << childToMove << " into " << minDepthChild << endl;
-      minDepthChild->Insert(childToMove);
-      cout << id << "Prebalance: " << maxDepthChild << " size: " << maxDepth << " min: " << minDepthChild << " size: " << minDepth << endl;
-
+    do {
       maxDepth = 0;
       maxDepthChild = NULL;
       minDepth = 100000;
       minDepthChild = NULL;
 
-      cout << "Postbalance at " << id << ": ";
       for (Spiri_controller* childController : getChildrenControllers()) {
         if(childController->CanInsert()) {
           int maximumControllerDepth = childController->GetMaximumDepth();
@@ -145,20 +118,19 @@ void Spiri_controller::Balance() {
           }
           if(childController->CanInsert()) {
             int minimumControllerDepth = childController->GetMinimumDepth();
-            cout << childController << ":" << maximumControllerDepth << "\\" << minimumControllerDepth << " ";
             if (minimumControllerDepth < minDepth) {
               minDepth = minimumControllerDepth;
               minDepthChild = childController;
             }
-          } else {
-            cout << "X ";
           }
         }
       }
-      cout << endl;
 
-      cout << id << "Postbalance: " << maxDepthChild << " size: " << maxDepth << " min: " << minDepthChild << " size: " << minDepth << endl;
-    }
+      if(maxDepth - 1 > minDepth && maxDepthChild != NULL && minDepthChild != NULL) {
+        Spiri_controller *childToMove = maxDepthChild->RemoveLeaf();
+        minDepthChild->Insert(childToMove);
+      }
+    }while(maxDepth - 1 > minDepth);
   }
 
   if(!location->IsRoot()) {
@@ -209,7 +181,7 @@ bool Spiri_controller::CanInsert() {
   }
 }
 
-void Spiri_controller::Insert(Spiri_controller* child) {
+void Spiri_controller::Insert(Spiri_controller *child) {
   vector<Spiri_controller*> childControllers = getChildrenControllers();
   if (childControllers.size() == location->getMaxChildrenSize()){
     int minDepth = 100000;
@@ -309,7 +281,7 @@ Spiri_controller* Spiri_controller::rightmost() {
   return this;
 }
 
-void Spiri_controller::replace(Spiri_controller *target) {
+void Spiri_controller::replace(Spiri_controller *target, CVector3 waypoint) {
   SwarmLocation* parentLocation = location->GetParent();
   swarmManager->RemoveChild(target);
   location = target->location;
