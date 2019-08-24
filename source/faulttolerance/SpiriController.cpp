@@ -128,7 +128,9 @@ void Spiri_controller::Balance() {
 
       if(maxDepth - 1 > minDepth && maxDepthChild != NULL && minDepthChild != NULL) {
         Spiri_controller *childToMove = maxDepthChild->RemoveLeaf();
+        //Spiri_controller *parent = swarmManager->GetParent();
         minDepthChild->Insert(childToMove);
+        LOG << "Balancing at " << id << " moving " << childToMove->id << " into subtree of " << minDepthChild->id << endl;
       }
     }while(maxDepth - 1 > minDepth);
   }
@@ -281,7 +283,7 @@ Spiri_controller* Spiri_controller::rightmost() {
   return this;
 }
 
-void Spiri_controller::replace(Spiri_controller *target, CVector3 waypoint) {
+void Spiri_controller::replace(Spiri_controller *target) {
   SwarmLocation* parentLocation = location->GetParent();
   swarmManager->RemoveChild(target);
   location = target->location;
@@ -298,6 +300,10 @@ bool Spiri_controller::failureDetected() {
 
   for(Spiri_controller* childController : getChildrenControllers()) {
     childFailed |= childController->failureDetected();
+  }
+
+  if(failed) {
+    LOG << "Failure detected at " << id << endl;
   }
 
   return childFailed || failed;

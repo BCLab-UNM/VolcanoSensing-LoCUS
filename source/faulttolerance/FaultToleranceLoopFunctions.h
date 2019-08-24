@@ -27,13 +27,15 @@ public:
   bool coverage[1000][1000];
   double rmax = 2;
 
-  void SetRootController(Spiri_controller *nextRootController);
+  void SetRootController(Spiri_controller *toReplace, Spiri_controller *heir);
 
 private:
 
   double rmin = 1;
   double stopRadius = 100;
-	int points_per_rotation = 100;
+	static const int points_per_rotation = 100;
+	double radii[points_per_rotation];
+  double loop[points_per_rotation];
   int fullshells = 1;
 	int spiralIndex = 0;
 	bool constellation_setup = false;

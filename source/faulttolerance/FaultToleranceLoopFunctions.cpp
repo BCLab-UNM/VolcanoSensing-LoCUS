@@ -3,7 +3,6 @@
 #include "EmptyMovement.h"
 #include "ThenMovement.h"
 #include "ReplaceWithHeir.h"
-#include "ReplaceRootAction.h"
 
 void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
@@ -19,6 +18,11 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   loadDroneFailures(droneFailureString);
 
   initCoverage();
+
+  for(int i = 0; i < points_per_rotation; i++) {
+    radii[i] = 0;
+    loop[i] = -1;
+  }
 
   swarmManager = new SwarmManager(rmin, rmax);
 
@@ -45,7 +49,6 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   }
 
   rootController->SetupHeir();
-  fullshells = rootController->GetMinimumDepth();
 }
 
 void Gradient_loop_functions::PostStep() {
@@ -67,10 +70,14 @@ void Gradient_loop_functions::PostStep() {
     if (rootController->IsFinished()) {
       if (!constellation_setup) {
         LOG << "Setup:" << simulationTime << endl;
-        LOG << "Fullshells:" << fullshells << endl;
         constellation_setup = true;
       }
-      argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(++spiralIndex, 2.0 * (fullshells - 0.75) * rmax);
+      int minimumDepth = rootController->GetMinimumDepth();
+      if(fullshells != minimumDepth) {
+        fullshells = minimumDepth;
+        LOG << "Fullshells:" << fullshells << endl;
+      }
+      argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(++spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
       rootController->AddRecursiveWaypoint(waypoint);
       waypoints.push_back(waypoint);
     }
@@ -80,26 +87,27 @@ void Gradient_loop_functions::PostStep() {
 void Gradient_loop_functions::healFailedSwarm() {
 
   Finishable* lastMovement = new EmptyMovement();
-  argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.75) * rmax);
+  argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
   for(Spiri_controller* failedController : getNextFailures()) {
     if (failedController->heir == NULL) {
       // Remove from swarm
       Spiri_controller *parent = failedController->getParentController();
+      LOG << "Removing " << failedController->id << " with no heir." << endl;
       swarmManager->RemoveChild(failedController);
       failedController->location = NULL;
-      failedController->heir = NULL;
+      parent->SetupParentHeir();
       parent->Balance();
     } else {
-      Movement* replaceWithHeir = new ReplaceWithHeir(failedController, waypoint, &controllers, swarmManager);
+      Movement* replaceWithHeir = new ReplaceWithHeir(this, failedController, waypoint, &controllers, swarmManager);
       ThenMovement* waitForPrevious = new ThenMovement(lastMovement, replaceWithHeir);
       failedController->AddMovement(waitForPrevious);
       lastMovement = waitForPrevious;
 
-      if(failedController == rootController) {
+      /*if(failedController == rootController) {
         ThenMovement* replaceRoot = new ThenMovement(lastMovement, new ReplaceRootAction(this, failedController->heir));
         failedController->AddMovement(replaceRoot);
         lastMovement = replaceRoot;
-      }
+      }*/
     }
   }
 }
@@ -133,19 +141,35 @@ vector<Spiri_controller*> Gradient_loop_functions::getNextFailures() {
 }
 
 argos::CVector3 Gradient_loop_functions::buildArchimedesSpiralWaypoint(int index, double radius) {
-  double altitude = 0;
-
-  // https://www.comsol.com/blogs/how-to-build-a-parameterized-archimedean-spiral-geometry/
-  double a = 0;
-  double b = radius / (2 * M_PI);
-  double index_angle_offset = 0;//(1.0 / size) * (2 * M_PI);
+  int indexLoop = index / points_per_rotation;
+  int indexMod = index % points_per_rotation;
 
   double angle = index * 2 * M_PI / points_per_rotation;
-  double point_radius = a + (b * angle);
-  double xoffset = point_radius * cos(angle + index_angle_offset); // in meters
-  double yoffset = point_radius * sin(angle + index_angle_offset);
 
-  return argos::CVector3(xoffset, yoffset, altitude);
+  if(loop[indexMod] != indexLoop) {
+    // https://www.comsol.com/blogs/how-to-build-a-parameterized-archimedean-spiral-geometry/
+    double b;
+    double point_radius;
+
+    if(index < points_per_rotation) {
+      b = radius / (2 * M_PI);
+      point_radius = b * angle;
+    } else {
+      point_radius = radii[indexMod] + radius;
+    }
+    radii[indexMod] = point_radius;
+    loop[indexMod] = indexLoop;
+  }
+
+  double point_radius = radii[index % points_per_rotation];
+
+  double altitude = 0;
+  double xoffset = point_radius * cos(angle); // in meters
+  double yoffset = point_radius * sin(angle);
+
+  argos::CVector3 waypoint(xoffset, yoffset, altitude);
+
+  return waypoint;
 }
 
 void Gradient_loop_functions::Reset() {
@@ -189,8 +213,10 @@ void Gradient_loop_functions::initCoverage() {
   }
 }
 
-void Gradient_loop_functions::SetRootController(Spiri_controller *nextRootController) {
-  rootController = nextRootController;
+void Gradient_loop_functions::SetRootController(Spiri_controller *toReplace, Spiri_controller *heir) {
+  if(toReplace == rootController) {
+    rootController = heir;
+  }
 }
 
 REGISTER_LOOP_FUNCTIONS(Gradient_loop_functions, "Gradient_loop_functions")

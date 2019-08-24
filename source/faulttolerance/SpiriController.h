@@ -38,7 +38,7 @@ public:
   void AddMovement(Movement *move);
   MoveToPosition* CreateOffsetMovement(CVector3 waypoint, CVector3 offsetPosition);
   int GetMinimumDepth();
-  void replace(Spiri_controller *pController, CVector3 waypoint);
+  void replace(Spiri_controller *target);
   bool failureDetected();
   void SetupParentHeir();
 
