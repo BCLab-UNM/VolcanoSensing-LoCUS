@@ -293,6 +293,9 @@ void Spiri_controller::replace(Spiri_controller *target) {
   Spiri_controller *parent = dynamic_cast<Spiri_controller*>(swarmManager->GetValue(parentLocation));
   parent->SetupParentHeir();
   parent->Balance();
+  Spiri_controller *heirParent = dynamic_cast<Spiri_controller*>(swarmManager->GetValue(location));
+  heirParent->SetupParentHeir();
+  heirParent->Balance();
 }
 
 bool Spiri_controller::failureDetected() {

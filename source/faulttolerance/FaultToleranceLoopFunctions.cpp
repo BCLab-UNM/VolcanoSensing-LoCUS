@@ -12,10 +12,14 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   GetNodeAttribute(simNode, "RMax", rmax);
   GetNodeAttribute(simNode, "StopCoverageRadius", stopRadius);
   string droneFailureString;
+  string randomFailureString;
   string emptyDroneFailureString = "";
   GetNodeAttributeOrDefault(simNode, "DroneFailures", droneFailureString, emptyDroneFailureString);
+  GetNodeAttributeOrDefault(simNode, "RandomFailures", randomFailureString, emptyDroneFailureString);
 
-  loadDroneFailures(droneFailureString);
+  srand(time(NULL));
+
+  loadDroneFailures(droneFailureString, randomFailureString);
 
   initCoverage();
 
@@ -59,6 +63,21 @@ void Gradient_loop_functions::PostStep() {
 
     if (simulationTime == failTime) {
       controllers.at(failId)->fail();
+    }
+  }
+  for (int i = 0; i < randomFail.size(); i++) {
+    int failCount = randomFail.at(i);
+    int failTime = randomFailAtTime.at(i);
+
+    if (simulationTime == failTime) {
+      for(int j = 0; j < failCount; j++) {
+        int failId = rand() % controllers.size();
+        if(controllers.at(failId)->failed) {
+          j--;
+        } else {
+          controllers.at(failId)->fail();
+        }
+      }
     }
   }
 
@@ -189,7 +208,7 @@ void Gradient_loop_functions::PostExperiment() {
   cout << "Time:" << simulationTime << endl;
 }
 
-void Gradient_loop_functions::loadDroneFailures(string droneFailureString) {
+void Gradient_loop_functions::loadDroneFailures(string droneFailureString, string randomFailureString) {
 
   vector<string> droneFailureStringTuples;
   Tokenize(droneFailureString, droneFailureStringTuples, ";");
@@ -201,6 +220,19 @@ void Gradient_loop_functions::loadDroneFailures(string droneFailureString) {
     if(failureTuple.size() >= 2) {
       droneToFail.push_back(atoi(failureTuple.at(0).c_str()));
       droneToFailAtTime.push_back(atoi(failureTuple.at(1).c_str()));
+    }
+  }
+
+  vector<string> randomFailureStringTuples;
+  Tokenize(randomFailureString, randomFailureStringTuples, ";");
+
+  for (long i = 0; i < randomFailureStringTuples.size(); i++) {
+    vector<string> failureTuple;
+    Tokenize(randomFailureStringTuples.at(i), failureTuple, ",");
+
+    if(failureTuple.size() >= 2) {
+      randomFail.push_back(atoi(failureTuple.at(0).c_str()));
+      randomFailAtTime.push_back(atoi(failureTuple.at(1).c_str()));
     }
   }
 }

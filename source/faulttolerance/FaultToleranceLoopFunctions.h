@@ -8,6 +8,7 @@
 #include "SpiriController.h"
 #include "SwarmManager.h"
 #include <list>
+#include <cstdlib>
 
 using namespace argos;
 using namespace std;
@@ -41,6 +42,8 @@ private:
 	bool constellation_setup = false;
 	vector<int> droneToFail;
 	vector<int> droneToFailAtTime;
+  vector<int> randomFail;
+  vector<int> randomFailAtTime;
 	Spiri_controller* rootController;
   std::vector<Spiri_controller*> controllers;
   std::vector<argos::CVector3> waypoints;
@@ -49,7 +52,7 @@ private:
   long simulationTime = 0;
 	argos::CVector3 buildArchimedesSpiralWaypoint(int index, double radius);
 
-  void loadDroneFailures(string basic_string);
+  void loadDroneFailures(string basic_string, string randomFailureString);
 
   void initCoverage();
 
