@@ -39,7 +39,7 @@
     <simulation RMin    = "1"
                 RMax    = "2"
                 StopCoverageRadius = "100"
-                DroneFailures = "0,1000;69,1000;20,1000;39,1000;74,2000;14,2500"/>
+                RandomFailures = "122,1000"/>
 
   </loop_functions>
 
@@ -57,7 +57,7 @@
       <!--<entity quantity="13" max_trials="100">-->
       <!--<entity quantity="32" max_trials="100">-->
       <!--<entity quantity="42" max_trials="100">-->
-      <entity quantity="76" max_trials="100">
+      <entity quantity="123" max_trials="100">
         <spiri id="spiri0" camera_range="3" camera_aperture="30">
           <body position="1,1,0" orientation="45,0,0" />
           <controller config="Spiri" />
