@@ -38,8 +38,8 @@
     <!-- un-evolvable environment variables -->
     <simulation RMin    = "{rmin}"
                 RMax    = "{rmax}"
-                StopCoverageRadius = "100"
-                RandomFailures = "{failures},1000"/>
+                StopCoverageRadius = "{coverage_radius}"
+                RandomFailures = "{failures},{failtimestep}"/>
 
   </loop_functions>
 
@@ -57,7 +57,7 @@
       <!--<entity quantity="13" max_trials="100">-->
       <!--<entity quantity="32" max_trials="100">-->
       <!--<entity quantity="42" max_trials="100">-->
-      <entity quantity="73" max_trials="100">
+      <entity quantity="{swarmsize}" max_trials="100">
         <spiri id="spiri0" camera_range="3" camera_aperture="30">
           <body position="1,1,0" orientation="45,0,0" />
           <controller config="Spiri" />

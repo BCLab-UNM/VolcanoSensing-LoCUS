@@ -1,5 +1,5 @@
 #!/bin/bash
-echo -e "\nho"
+echo -e "\nrho"
 for rmax in 2 4 8 16
 do
   echo -e "\nrmax = $rmax"
