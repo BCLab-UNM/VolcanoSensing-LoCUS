@@ -7,36 +7,29 @@ def test(args):
 
 def get_args():
     parser = argparse.ArgumentParser(description='ARGoS Fault Tolerant Drone Simulator')
+
     parser.add_argument(
-        '--DisableNestSight',
+        '--rmin',
         type=int,
-        default=0)
+        default=1)
     parser.add_argument(
-        '--DisableCompass',
+        '--rmax',
         type=int,
-        default=0)
+        default=1)
     parser.add_argument(
-        '--DisableHoldingFood',
+        '--coverage_radius',
         type=int,
-        default=0)
+        default=100)
     parser.add_argument(
-        '--DisableNearFood',
+        '--failtimestep',
         type=int,
-        default=0)
+        default=1000)
     parser.add_argument(
-        '--DisableRobotProxmity',
+        '--swarmsize',
         type=int,
-        default=0)
+        default=1)
     parser.add_argument(
-        '--DisablePheromone',
-        type=int,
-        default=0)
-    parser.add_argument(
-        '--DisableNestLight',
-        type=int,
-        default=0)
-    parser.add_argument(
-        '--FoodDistribution',
+        '--failures',
         type=int,
         default=0)
     args = parser.parse_args()

@@ -1,29 +1,18 @@
 import os, argparse, datetime, random, time, subprocess, tempfile
-import xml.etree.ElementTree as ET
 
 def run_trial(args):
-    # Copy example XML file to temp 
-    # os.system('cp /neatfa/argos/experiments/1-C.xml /neatfa/argos/experiments/iAnt_temp.xml')
+    with open('/faulttolerance/argos/experiments/Fault-Tolerance_template.xml', "rt") as fin:
+        with tempfile.NamedTemporaryFile(dir="/faulttolerance/argos/experiments/",  suffix=".xml", delete=False) as configuration_file:
 
-    # Read and parse XML, extract needed experiment constants
-    tree = ET.parse('/neatfa/argos/experiments/dockerized.xml')
-    root = tree.getroot()
-    sim_params = root.find('loop_functions').find('simulation')
-
-    # Set args in XML foe and rewrite
-    for arg in vars(args):
-        sim_params.set(arg, str(getattr(args, arg)))
-    with tempfile.NamedTemporaryFile(dir="/neatfa/argos/experiments/",  suffix=".xml", delete=False) as configuration_file:
-
-        tree.write(configuration_file)
-        configuration_file.flush()
-        # Exectute Argos Experiment and write output to temp file
-        output = subprocess.check_output(["argos3", "-c", configuration_file.name]).splitlines() 
-        score = 0
-        for line in output:  
-            if str('Fitness') in line:
-                score = float(line.split(':')[1].strip())
-                break
-
-        print(score)
-    return(score)
+            for line in fin:
+                updated = line.replace('{failures}', "{}".format(args.failures)) \
+                    .replace('{rmin}', "{}".format(args.rmin)) \
+                    .replace('{rmax}', "{}".format(args.rmax)) \
+                    .replace('{coverage_radius}', "{}".format(args.coverage_radius)) \
+                    .replace('{failtimestep}', "{}".format(args.failtimestep)) \
+                    .replace('{swarmsize}', "{}".format(args.swarmsize))
+                configuration_file.write(updated)
+            configuration_file.flush()
+            # Exectute Argos Experiment and write output to temp file
+            print subprocess.check_output(["argos3", "-c", configuration_file.name])
+            # print subprocess.check_output(["argos3", "-c", "/faulttolerance/argos/experiments/Fault-Tolerance.xml"])

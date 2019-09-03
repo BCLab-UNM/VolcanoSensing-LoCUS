@@ -14,12 +14,12 @@ ADD docker/*.deb /
 RUN dpkg -i argos3_simulator-*.deb
 
 # Install neatfa
-ADD ./argos /neatfa/argos
-WORKDIR /neatfa/argos
+ADD ./argos /faulttolerance/argos
+WORKDIR /faulttolerance/argos
 RUN mkdir build
-RUN chmod +x /neatfa/argos/build.sh
+RUN chmod +x /faulttolerance/argos/build.sh
 RUN ls
-RUN /neatfa/argos/build.sh
+RUN /faulttolerance/argos/build.sh
 
 # Copy Scripts
 RUN mkdir /root/scripts
