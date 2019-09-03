@@ -83,6 +83,8 @@ void Gradient_loop_functions::PostStep() {
 
   if (rootController->failureDetected()) {
     LOG << "Healing" << endl;
+    healing = true;
+    healStart = simulationTime;
     healFailedSwarm();
     spiralIndex--;
   } else {
@@ -96,6 +98,10 @@ void Gradient_loop_functions::PostStep() {
         fullshells = minimumDepth;
         LOG << "Fullshells:" << fullshells << endl;
       }
+      if(healing) {
+        healing = false;
+        LOG << "Healing took: " << (simulationTime - healStart) << endl;
+      }
       argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(++spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
       rootController->AddRecursiveWaypoint(waypoint);
       waypoints.push_back(waypoint);
@@ -108,26 +114,10 @@ void Gradient_loop_functions::healFailedSwarm() {
   Finishable* lastMovement = new EmptyMovement();
   argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
   for(Spiri_controller* failedController : getNextFailures()) {
-    if (failedController->heir == NULL) {
-      // Remove from swarm
-      Spiri_controller *parent = failedController->getParentController();
-      LOG << "Removing " << failedController->id << " with no heir." << endl;
-      swarmManager->RemoveChild(failedController);
-      failedController->location = NULL;
-      parent->SetupParentHeir();
-      parent->Balance();
-    } else {
-      Movement* replaceWithHeir = new ReplaceWithHeir(this, failedController, waypoint, &controllers, swarmManager);
-      ThenMovement* waitForPrevious = new ThenMovement(lastMovement, replaceWithHeir);
-      failedController->AddMovement(waitForPrevious);
-      lastMovement = waitForPrevious;
-
-      /*if(failedController == rootController) {
-        ThenMovement* replaceRoot = new ThenMovement(lastMovement, new ReplaceRootAction(this, failedController->heir));
-        failedController->AddMovement(replaceRoot);
-        lastMovement = replaceRoot;
-      }*/
-    }
+    Movement* replaceWithHeir = new ReplaceWithHeir(this, failedController, waypoint, &controllers, swarmManager);
+    ThenMovement* waitForPrevious = new ThenMovement(lastMovement, replaceWithHeir);
+    failedController->AddMovement(waitForPrevious);
+    lastMovement = waitForPrevious;
   }
 }
 

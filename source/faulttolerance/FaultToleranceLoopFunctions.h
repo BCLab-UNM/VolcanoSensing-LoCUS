@@ -50,6 +50,8 @@ private:
   SwarmManager* swarmManager;
 
   long simulationTime = 0;
+  bool healing = false;
+  long healStart = 0;
 	argos::CVector3 buildArchimedesSpiralWaypoint(int index, double radius);
 
   void loadDroneFailures(string basic_string, string randomFailureString);
