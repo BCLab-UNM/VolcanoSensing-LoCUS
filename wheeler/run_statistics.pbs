@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#PBS -q debug
+#PBS -l nodes=2:ppn=8
+#PBS -l walltime=00:10:00
+#PBS -N NEATFA_Robot_Swarm
+#PBS -j oe
+#PBS -m bae
+#PBS –M johncarl@unm.edu
+
+module load anaconda
+module load parallel-20170322-gcc-7.1.0-csyw7ny
+module load singularity3-3.0.3-gcc-7.3.0-2coe6vd
+
+cd $PBS_O_WORKDIR
+
+TEMP_DIR=$PBS_O_WORKDIR/temp
+EXPERIMENTS_DIR=$PBS_O_WORKDIR/experiments
+
+CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/neatfa/argos/experiments/ $PBS_O_WORKDIR/neatfa_test3.simg --DisablePheromone {} "
+
+parallel $CMD_STR > {#}.txt ::: 1 0
+
+# python evolve_neatfa.py --PBS_O_WORKDIR $PBS_O_WORKDIR
+
+# parallel < runfile.txt
