@@ -4,4 +4,4 @@ build
 
 cmake-build-debug
 
-experiments/coverage/*
+argos/experiments/coverage/*
