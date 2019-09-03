@@ -1,6 +1,9 @@
 import subprocess
+import os
 
 def buildArgosParameters(type, rmin, rmax, swarmsize, coverage_radius, failures = 0, failtimestep = 1000):
+  if not os.path.exists("experiments/coverage/{}".format(type)):
+    os.makedirs("experiments/coverage/{}".format(type))
   filename = "experiments/coverage/{}/Fault-Tolerance_{}_{}_{}_{}_{}_{}.xml".format(type, rmin, rmax, swarmsize, coverage_radius, failures, failtimestep)
   with open("experiments/Fault-Tolerance_template.xml", "rt") as fin:
     with open(filename, "wt") as fout:
