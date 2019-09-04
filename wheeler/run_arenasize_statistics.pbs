@@ -24,10 +24,4 @@ CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttole
 
 mkdir -p results/arena_size
 
-parallel $CMD_STR ::: \
-0 ::: \
-32 ::: \
-1 ::: \
-2 ::: \
-$(seq 10 10 100) ::: \
-1000 # Fail timestep
+parallel $CMD_STR ::: 0 ::: 32 ::: 1 ::: 2 ::: $(seq 10 10 100) ::: 1000 # Fail timestep
