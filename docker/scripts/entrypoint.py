@@ -32,6 +32,10 @@ def get_args():
         '--failures',
         type=int,
         default=0)
+    parser.add_argument(
+        '--seed',
+        type=int,
+        default=0)
     args = parser.parse_args()
     return args
 

@@ -38,6 +38,7 @@
     <!-- un-evolvable environment variables -->
     <simulation RMin    = "{rmin}"
                 RMax    = "{rmax}"
+                Seed    = "{seed}"
                 StopCoverageRadius = "{coverage_radius}"
                 RandomFailures = "{failures},{failtimestep}"/>
 

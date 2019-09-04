@@ -38,6 +38,7 @@
     <!-- un-evolvable environment variables -->
     <simulation RMin    = "1"
                 RMax    = "2"
+                Seed    = "0"
                 StopCoverageRadius = "100"
                 DroneFailures = "0,1000;69,1000;20,1000;39,1000;74,2000;14,2500"/>
 

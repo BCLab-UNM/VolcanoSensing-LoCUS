@@ -11,13 +11,23 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   GetNodeAttribute(simNode, "RMin", rmin);
   GetNodeAttribute(simNode, "RMax", rmax);
   GetNodeAttribute(simNode, "StopCoverageRadius", stopRadius);
+  long seed = 0;
+  GetNodeAttributeOrDefault(simNode, "Seed", seed, (long)0);
   string droneFailureString;
   string randomFailureString;
   string emptyDroneFailureString = "";
   GetNodeAttributeOrDefault(simNode, "DroneFailures", droneFailureString, emptyDroneFailureString);
   GetNodeAttributeOrDefault(simNode, "RandomFailures", randomFailureString, emptyDroneFailureString);
 
-  srand(time(NULL));
+  cout << "Configuration:"
+          "\nrmin:" << rmin <<
+          "\nrmax:" << rmax <<
+          "\nradius:" << stopRadius <<
+          "\nseed:" << seed <<
+          "\nfailures:" << droneFailureString <<
+          "\nrandomfailures:" << randomFailureString << endl;
+
+  srand(seed);
 
   loadDroneFailures(droneFailureString, randomFailureString);
 
