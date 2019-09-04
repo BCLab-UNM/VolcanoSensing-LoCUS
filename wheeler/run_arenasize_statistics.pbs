@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#PBS -q debug
+#PBS -q batch
 #PBS -l nodes=2:ppn=8
-#PBS -l walltime=00:10:00
-#PBS -N FaultTolerance_simulation_arenasize_stats
+#PBS -l walltime=24:00:00
+#PBS -N ft_arenasize_stats
 #PBS -j oe
 #PBS -m bae
 #PBS –M johncarl@unm.edu
@@ -24,5 +24,4 @@ CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttole
 
 mkdir -p results/arena_size
 
-# parallel $CMD_STR ::: 0 ::: 32 ::: 1 ::: 2 ::: $(seq 10 10 100) ::: 1000
-parallel $CMD_STR ::: 0 ::: 32 ::: 1 ::: 2 ::: $(seq 10 10 20) ::: 1000
+parallel $CMD_STR ::: 0 ::: 32 ::: 1 ::: 2 ::: $(seq 10 10 100) ::: 1000
