@@ -26,5 +26,5 @@ mkdir -p results/failure
 
 parallel $CMD_STR ::: 0 ::: 73 ::: 1 ::: 2 ::: 100 ::: 1000 ::: 0
 
-# parallel $CMD_STR ::: $(seq 72) ::: 73 ::: 1 ::: 2 ::: 100 ::: 1000 ::: #(seq 300)
-parallel $CMD_STR ::: 10 ::: 73 ::: 1 ::: 2 ::: 100 ::: 1000 ::: 10
+# parallel $CMD_STR ::: $(seq 72) ::: 73 ::: 1 ::: 2 ::: 100 ::: 1000 ::: $(seq 300)
+parallel $CMD_STR ::: $(seq 5) ::: 73 ::: 1 ::: 2 ::: 100 ::: 1000 ::: $(seq 10)
