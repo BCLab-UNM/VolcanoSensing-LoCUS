@@ -26,4 +26,5 @@ mkdir -p results/failures_by_rmin
 
 parallel $CMD_STR ::: 0 ::: 73 ::: $(seq 4) ::: 4 ::: 100 ::: 1000 ::: 0
 
-parallel $CMD_STR ::: $(seq 72) ::: 73 ::: $(seq 4) ::: 4 ::: 100 ::: 1000 ::: #(seq 300)
+# parallel $CMD_STR ::: $(seq 72) ::: 73 ::: $(seq 4) ::: 4 ::: 100 ::: 1000 ::: #(seq 300)
+parallel $CMD_STR ::: 0 ::: 73 ::: 1 ::: 4 ::: 100 ::: 1000 ::: #(seq 300)

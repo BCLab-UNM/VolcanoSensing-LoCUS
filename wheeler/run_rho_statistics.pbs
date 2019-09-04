@@ -24,10 +24,9 @@ CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttole
 
 mkdir -p results/rho
 
-parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 2) ::: 2 ::: 100 ::: 1000
-
-parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 4) ::: 4 ::: 100 ::: 1000
-
-parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 8) ::: 8 ::: 100 ::: 1000
+#parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 2) ::: 2 ::: 100 ::: 1000
+#parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 4) ::: 4 ::: 100 ::: 1000
+#parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 8) ::: 8 ::: 100 ::: 1000
+#parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 16) ::: 16 ::: 100 ::: 1000
 
 parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 16) ::: 16 ::: 100 ::: 1000
