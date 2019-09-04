@@ -15,4 +15,3 @@ def run_trial(args):
             configuration_file.flush()
             # Exectute Argos Experiment and write output to temp file
             print subprocess.check_output(["argos3", "-c", configuration_file.name])
-            # print subprocess.check_output(["argos3", "-c", "/faulttolerance/argos/experiments/Fault-Tolerance.xml"])

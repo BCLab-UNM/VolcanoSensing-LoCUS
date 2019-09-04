@@ -1,0 +1,43 @@
+#!/bin/bash
+
+#PBS -q debug
+#PBS -l nodes=2:ppn=8
+#PBS -l walltime=00:10:00
+#PBS -N FaultTolerance_simulation_failuresrmin_stats
+#PBS -j oe
+#PBS -m bae
+#PBS –M johncarl@unm.edu
+
+module load anaconda
+module load parallel-20170322-gcc-7.1.0-csyw7ny
+module load singularity3-3.0.3-gcc-7.3.0-2coe6vd
+
+HOME_DIR="/users/johncarl/neatfa_ablation"
+cd $PBS_O_WORKDIR
+
+TEMP_DIR=$HOME_DIR/temp
+EXPERIMENTS_DIR=$HOME_DIR/experiments
+
+CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttolerance/argos/experiments/ $PBS_O_WORKDIR/faulttolerance.simg --failures {1} --swarmsize {2} --rmin {3} --rmax {4} --coverage_radius {5} --failtimestep {6} --seed {7} > $PBS_O_WORKDIR/results/failures_by_rmin/result_{1}_{2}_{3}_{4}_{5}_{6}_{7}.txt"
+
+# Failures by Rmin
+
+mkdir -p results/failures_by_rmin
+
+parallel $CMD_STR ::: \
+0 ::: \ # Failures
+73 ::: \ # Swarm Size
+$(seq 4) ::: \ # RMin
+4 ::: \ # RMax
+100 ::: \ # Coverage Radius
+1000 ::: \ # Fail timestep
+0
+
+parallel $CMD_STR ::: \
+$(seq 72) ::: \ # Failures
+73 ::: \ # Swarm Size
+$(seq 4) ::: \ # RMin
+4 ::: \ # RMax
+100 ::: \ # Coverage Radius
+1000 ::: \ # Fail timestep
+#(seq 300) # Trials
