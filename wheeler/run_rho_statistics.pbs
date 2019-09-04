@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#PBS -q batch
+#PBS -q default
 #PBS -l nodes=2:ppn=8
 #PBS -l walltime=24:00:00
-#PBS -N ft_simulation_rho_stats
+#PBS -N ft_rho_stats
 #PBS -j oe
 #PBS -m bae
 #PBS –M johncarl@unm.edu
@@ -26,5 +26,5 @@ mkdir -p results/rho
 
 parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 2) ::: 2 ::: 100 ::: 1000
 parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 4) ::: 4 ::: 100 ::: 1000
-#arallel $CMD_STR ::: 0 ::: 32 ::: $(seq 8) ::: 8 ::: 100 ::: 1000
+parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 8) ::: 8 ::: 100 ::: 1000
 parallel $CMD_STR ::: 0 ::: 32 ::: $(seq 16) ::: 16 ::: 100 ::: 1000

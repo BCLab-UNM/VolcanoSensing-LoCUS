@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#PBS -q batch
-#PBS -l nodes=2:ppn=8
+#PBS -q default
+#PBS -l nodes=10:ppn=8
 #PBS -l walltime=24:00:00
 #PBS -N ft_arenasize_stats
 #PBS -j oe
@@ -24,4 +24,4 @@ CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttole
 
 mkdir -p results/arena_size
 
-parallel $CMD_STR ::: 0 ::: 32 ::: 1 ::: 2 ::: $(seq 10 10 100) ::: 1000
+parallel $CMD_STR ::: 0 ::: 32 ::: 1 ::: 2 ::: $(seq 10 100) ::: 1000
