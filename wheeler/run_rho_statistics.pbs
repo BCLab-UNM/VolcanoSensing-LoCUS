@@ -25,33 +25,33 @@ CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttole
 mkdir -p results/rho
 
 parallel $CMD_STR ::: \
-0 ::: \ # Failures
-32 ::: \ # Swarm Size
-$(seq 2) ::: \ # RMin
-2 ::: \ # RMax
-100 ::: \ # Coverage Radius
-1000 # Fail timestep
+0 ::: \
+32 ::: \
+$(seq 2) ::: \
+2 ::: \
+100 ::: \
+1000
 
 parallel $CMD_STR ::: \
-0 ::: \ # Failures
-32 ::: \ # Swarm Size
-$(seq 4) ::: \ # RMin
-4 ::: \ # RMax
-100 ::: \ # Coverage Radius
-1000 # Fail timestep
+0 ::: \
+32 ::: \
+$(seq 4) ::: \
+4 ::: \
+100 ::: \
+1000
 
 parallel $CMD_STR ::: \
 0 ::: \ # Failures
 32 ::: \ # Swarm Size
 $(seq 8) ::: \ # RMin
-8 ::: \ # RMax
-100 ::: \ # Coverage Radius
-1000 # Fail timestep
+8 ::: \
+100 ::: \
+1000
 
 parallel $CMD_STR ::: \
 0 ::: \ # Failures
 32 ::: \ # Swarm Size
 $(seq 16) ::: \ # RMin
-16 ::: \ # RMax
-100 ::: \ # Coverage Radius
-1000 # Fail timestep
+16 ::: \
+100 ::: \
+1000

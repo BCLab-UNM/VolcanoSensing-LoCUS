@@ -25,19 +25,19 @@ CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttole
 mkdir -p results/failures_by_rmin
 
 parallel $CMD_STR ::: \
-0 ::: \ # Failures
-73 ::: \ # Swarm Size
-$(seq 4) ::: \ # RMin
-4 ::: \ # RMax
-100 ::: \ # Coverage Radius
-1000 ::: \ # Fail timestep
+0 ::: \
+73 ::: \
+$(seq 4) ::: \
+4 ::: \
+100 ::: \
+1000 ::: \
 0
 
 parallel $CMD_STR ::: \
-$(seq 72) ::: \ # Failures
-73 ::: \ # Swarm Size
-$(seq 4) ::: \ # RMin
-4 ::: \ # RMax
-100 ::: \ # Coverage Radius
-1000 ::: \ # Fail timestep
-#(seq 300) # Trials
+$(seq 72) ::: \
+73 ::: \
+$(seq 4) ::: \
+4 ::: \
+100 ::: \
+1000 ::: \
+#(seq 300)
