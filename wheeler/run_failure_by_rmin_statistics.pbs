@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #PBS -q default
-#PBS -l nodes=10:ppn=8
-#PBS -l walltime=24:00:00
+#PBS -l nodes=20:ppn=8
+#PBS -l walltime=48:00:00
 #PBS -N ft_failuresrmin_stats
 #PBS -j oe
 #PBS -m bae
@@ -26,4 +26,4 @@ mkdir -p results/failures_by_rmin
 
 parallel $CMD_STR ::: 0 ::: 73 ::: $(seq 4) ::: 4 ::: 100 ::: 1000 ::: 0
 
-parallel $CMD_STR ::: $(seq 72) ::: 73 ::: $(seq 4) ::: 4 ::: 100 ::: 1000 ::: $(seq 300)
+parallel --jobs 8 --joblog ft_failuresrmin.log $CMD_STR ::: $(seq 72) ::: 73 ::: $(seq 4) ::: 4 ::: 100 ::: 1000 ::: $(seq 10)
