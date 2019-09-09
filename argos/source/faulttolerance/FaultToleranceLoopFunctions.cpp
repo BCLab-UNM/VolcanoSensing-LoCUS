@@ -199,7 +199,7 @@ void Gradient_loop_functions::Reset() {
 }
 
 bool Gradient_loop_functions::IsExperimentFinished() {
-  bool surveyCovered = (2.0 * fullshells * rmax * spiralIndex / points_per_rotation) > stopRadius;
+  bool surveyCovered = radii[spiralIndex % points_per_rotation] > stopRadius;
   return rootController->IsFinished() && surveyCovered;
 }
 
