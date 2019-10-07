@@ -138,6 +138,10 @@ SwarmLocation* SwarmManager::AddChild(ControllerBase *parent, ControllerBase *ch
   return NULL;
 }
 
+bool SwarmManager::AreChildrenFull(ControllerBase *parent) {
+  return GetChildren(parent).size() == locationAssociation.at(parent)->getMaxChildrenSize();
+}
+
 void SwarmManager::UpdateLocation(ControllerBase *value, SwarmLocation *location) {
   std::map<ControllerBase*, SwarmLocation*>::iterator iter = locationAssociation.find(value);
 
@@ -150,3 +154,7 @@ void SwarmManager::UpdateLocation(ControllerBase *value, SwarmLocation *location
 }
 
 SwarmManager::SwarmManager(double rmin, double rmax) : rmin(rmin), rmax(rmax) {}
+
+bool SwarmManager::IsRoot(ControllerBase *value) {
+  return locationAssociation.at(value)->IsRoot();
+}

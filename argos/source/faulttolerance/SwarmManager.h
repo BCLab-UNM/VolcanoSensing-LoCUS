@@ -20,6 +20,10 @@ public:
 
   void UpdateLocation(ControllerBase *value, SwarmLocation *location);
 
+  bool AreChildrenFull(ControllerBase *parent);
+
+  bool IsRoot(ControllerBase *pController);
+
 private:
   double rmin;
   double rmax;

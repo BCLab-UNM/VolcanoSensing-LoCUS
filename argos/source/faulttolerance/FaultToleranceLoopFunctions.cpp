@@ -3,6 +3,7 @@
 #include "EmptyMovement.h"
 #include "ThenMovement.h"
 #include "ReplaceWithHeir.h"
+#include "BalanceMovement.h"
 
 void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
@@ -129,6 +130,7 @@ void Gradient_loop_functions::healFailedSwarm() {
     failedController->AddMovement(waitForPrevious);
     lastMovement = waitForPrevious;
   }
+  rootController->AddMovement(new BalanceMovement(this));
 }
 
 vector<Spiri_controller*> Gradient_loop_functions::getNextFailures() {

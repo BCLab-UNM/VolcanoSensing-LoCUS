@@ -11,7 +11,6 @@ bool ReplaceWithHeir::step() {
       swarmManager->RemoveChild(controllerToReplace);
       controllerToReplace->location = NULL;
       parent->SetupParentHeir();
-      parent->Balance();
       replacementMovement = new EmptyMovement();
     } else {
       LOG << "Replacing " << controllerToReplace->id << " with heir " << controllerToReplace->heir->id << endl;

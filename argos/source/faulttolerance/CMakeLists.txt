@@ -31,7 +31,7 @@ add_library(Spiri_controller SHARED
 		SwarmManager.h
 		SwarmLocationImpl.cpp
 		SwarmLocationImpl.h
-		)
+        BalanceMovement.cpp BalanceMovement.h)
 
 ###############################################
 # link shared object files to dependencies

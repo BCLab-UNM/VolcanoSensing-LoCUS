@@ -32,12 +32,12 @@ public:
   void fail();
   void Balance();
   Spiri_controller* RemoveLeaf();
-  bool CanInsert();
   void Insert(Spiri_controller *child);
   void AddRecursiveWaypoint(CVector3 waypoint);
   void AddMovement(Movement *move);
   MoveToPosition* CreateOffsetMovement(CVector3 waypoint, CVector3 offsetPosition);
   int GetMinimumDepth();
+  int GetMaximumDepth();
   void replace(Spiri_controller *target);
   bool failureDetected();
   void SetupParentHeir();
@@ -64,7 +64,6 @@ private:
   Spiri_controller* GetPredecessor();
   Spiri_controller* leftmost();
   Spiri_controller* rightmost();
-  int GetMaximumDepth();
 };
 
 #endif /* SPIRI_CONTROLLER_H_ */

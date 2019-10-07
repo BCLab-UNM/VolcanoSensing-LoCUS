@@ -5,8 +5,6 @@
 class ControllerBase {
 
 public:
-  virtual bool CanInsert() = 0;
-
   virtual int GetMinimumDepth() = 0;
 };
 

@@ -27,14 +27,14 @@ void Gradient_qt_user_functions::DrawOnArena(CFloorEntity& entity) {
     }
   }
 
-  for(int i = 0; i < 1000; i++) {
-    for(int j = 0; j < 1000; j++) {
-      if(loopFunctions.coverage[i][j]) {
-        CVector3 nest_3d(i - 500, j - 500, 0.1);
-        DrawBox(nest_3d, CQuaternion(), CVector3(1, 1, 0.001), CColor::BLUE);
-      }
-    }
-  }
+//  for(int i = 0; i < 1000; i++) {
+//    for(int j = 0; j < 1000; j++) {
+//      if(loopFunctions.coverage[i][j]) {
+//        CVector3 nest_3d(i - 500, j - 500, 0.1);
+//        DrawBox(nest_3d, CQuaternion(), CVector3(1, 1, 0.001), CColor::BLUE);
+//      }
+//    }
+//  }
 }
 
 REGISTER_QTOPENGL_USER_FUNCTIONS(Gradient_qt_user_functions, "Gradient_qt_user_functions")

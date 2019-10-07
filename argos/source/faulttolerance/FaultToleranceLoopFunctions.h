@@ -30,6 +30,8 @@ public:
 
   void SetRootController(Spiri_controller *toReplace, Spiri_controller *heir);
 
+  Spiri_controller* getRootController() { return rootController;}
+
 private:
 
   double rmin = 1;

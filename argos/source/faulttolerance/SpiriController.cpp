@@ -107,35 +107,42 @@ void Spiri_controller::Balance() {
       maxDepth = 0;
       maxDepthChild = NULL;
       minDepth = 100000;
-      minDepthChild = NULL;
+      minDepthChild = this;
 
       for (Spiri_controller* childController : getChildrenControllers()) {
-        if(childController->CanInsert()) {
+          int maximumControllerDepth = childController->GetMaximumDepth();
+        if (maximumControllerDepth > maxDepth) {
+          maxDepth = maximumControllerDepth;
+          maxDepthChild = childController;
+        }
+      }
+
+      if(swarmManager->AreChildrenFull(this)) {
+        for (Spiri_controller *childController : getChildrenControllers()) {
           int maximumControllerDepth = childController->GetMaximumDepth();
           if (maximumControllerDepth > maxDepth) {
             maxDepth = maximumControllerDepth;
             maxDepthChild = childController;
           }
-          if(childController->CanInsert()) {
-            int minimumControllerDepth = childController->GetMinimumDepth();
-            if (minimumControllerDepth < minDepth) {
-              minDepth = minimumControllerDepth;
-              minDepthChild = childController;
-            }
+          int minimumControllerDepth = childController->GetMinimumDepth();
+          if (minimumControllerDepth < minDepth) {
+            minDepth = minimumControllerDepth;
+            minDepthChild = childController;
           }
         }
+      } else {
+        minDepth = 0;
       }
 
       if(maxDepth - 1 > minDepth && maxDepthChild != NULL && minDepthChild != NULL) {
         Spiri_controller *childToMove = maxDepthChild->RemoveLeaf();
-        //Spiri_controller *parent = swarmManager->GetParent();
         minDepthChild->Insert(childToMove);
         LOG << "Balancing at " << id << " moving " << childToMove->id << " into subtree of " << minDepthChild->id << endl;
       }
-    }while(maxDepth - 1 > minDepth);
+     }while(maxDepth - 1 > minDepth);
   }
 
-  if(!location->IsRoot()) {
+  if(!swarmManager->IsRoot(this)) {
     getParentController()->Balance();
   }
 }
@@ -150,12 +157,10 @@ Spiri_controller* Spiri_controller::RemoveLeaf() {
   Spiri_controller* maxDepthChild = NULL;
 
   for (Spiri_controller* controller : childControllers) {
-    if(controller->CanInsert()) {
-      int maximumControllerDepth = controller->GetMaximumDepth();
-      if (maximumControllerDepth > maxDepth) {
-        maxDepth = maximumControllerDepth;
-        maxDepthChild = controller;
-      }
+    int maximumControllerDepth = controller->GetMaximumDepth();
+    if (maximumControllerDepth > maxDepth) {
+      maxDepth = maximumControllerDepth;
+      maxDepthChild = controller;
     }
   }
 
@@ -167,22 +172,6 @@ Spiri_controller* Spiri_controller::RemoveLeaf() {
   }
 }
 
-bool Spiri_controller::CanInsert() {
-  vector<Spiri_controller*> childControllers = getChildrenControllers();
-  if (location->getMaxChildrenSize() == 0) {
-    return false;
-  } else if(location->getMaxChildrenSize() == childControllers.size()) {
-    for(Spiri_controller* childController : childControllers) {
-      if(childController->CanInsert()) {
-        return true;
-      }
-    }
-    return false;
-  } else {
-    return true;
-  }
-}
-
 void Spiri_controller::Insert(Spiri_controller *child) {
   vector<Spiri_controller*> childControllers = getChildrenControllers();
   if (childControllers.size() == location->getMaxChildrenSize()){
@@ -190,12 +179,10 @@ void Spiri_controller::Insert(Spiri_controller *child) {
     Spiri_controller* minDepthChild = NULL;
 
     for (Spiri_controller* controller : childControllers) {
-      if(controller->CanInsert()) {
-        int controllerDepth = controller->GetMinimumDepth();
-        if (controllerDepth < minDepth) {
-          minDepth = controllerDepth;
-          minDepthChild = controller;
-        }
+      int controllerDepth = controller->GetMinimumDepth();
+      if (controllerDepth < minDepth) {
+        minDepth = controllerDepth;
+        minDepthChild = controller;
       }
     }
 
@@ -212,12 +199,10 @@ int Spiri_controller::GetMinimumDepth() {
     bool foundMinimumHeight = false;
     childMinimumHeight = 10000;
     for(ControllerBase* childController: swarmManager->GetChildren(this)) {
-      if (childController->CanInsert()) {
-        foundMinimumHeight = true;
-        int childHeight = childController->GetMinimumDepth();
-        if (childMinimumHeight > childHeight) {
-          childMinimumHeight = childHeight;
-        }
+      foundMinimumHeight = true;
+      int childHeight = childController->GetMinimumDepth();
+      if (childMinimumHeight > childHeight) {
+        childMinimumHeight = childHeight;
       }
     }
     if(!foundMinimumHeight) {
@@ -292,10 +277,8 @@ void Spiri_controller::replace(Spiri_controller *target) {
   target->heir = NULL;
   Spiri_controller *parent = dynamic_cast<Spiri_controller*>(swarmManager->GetValue(parentLocation));
   parent->SetupParentHeir();
-  parent->Balance();
   Spiri_controller *heirParent = dynamic_cast<Spiri_controller*>(swarmManager->GetValue(location));
   heirParent->SetupParentHeir();
-  heirParent->Balance();
 }
 
 bool Spiri_controller::failureDetected() {
