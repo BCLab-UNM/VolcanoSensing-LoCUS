@@ -15,6 +15,7 @@
 #include "Delay.h"
 #include "SwarmManager.h"
 #include "ControllerBase.h"
+#include "PositionReading.h"
 #include <math.h>
 
 using namespace argos;
@@ -49,6 +50,8 @@ public:
   bool failed = false;
   SwarmLocation *location;
   SwarmManager* swarmManager;
+
+  std::vector<PositionReading> getReadings();
 
 private:
 

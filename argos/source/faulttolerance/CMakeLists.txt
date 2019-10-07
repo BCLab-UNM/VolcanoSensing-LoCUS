@@ -5,7 +5,17 @@
 add_library(Gradient_loop_functions MODULE FaultToleranceLoopFunctions.h
 		FaultToleranceLoopFunctions.cpp
 		FaultToleranceQTUserFunctions.h
-		FaultToleranceQTUserFunctions.cpp ThenMovement.cpp ThenMovement.h ReplaceWithHeir.cpp ReplaceWithHeir.h ParallelMovement.cpp ParallelMovement.h)
+		FaultToleranceQTUserFunctions.cpp
+		ThenMovement.cpp
+		ThenMovement.h
+		ReplaceWithHeir.cpp
+		ReplaceWithHeir.h
+		ParallelMovement.cpp
+		ParallelMovement.h
+		SimplePlume.cpp
+		SimplePlume.h
+		ColorUtil.cpp
+		ColorUtil.h)
 
 add_library(Spiri_controller SHARED
 		SpiriController.h
@@ -31,7 +41,12 @@ add_library(Spiri_controller SHARED
 		SwarmManager.h
 		SwarmLocationImpl.cpp
 		SwarmLocationImpl.h
-        BalanceMovement.cpp BalanceMovement.h)
+        BalanceMovement.cpp BalanceMovement.h
+		SimplePlume.cpp
+		SimplePlume.h
+		ColorUtil.cpp
+		ColorUtil.h
+		PositionReading.h)
 
 ###############################################
 # link shared object files to dependencies

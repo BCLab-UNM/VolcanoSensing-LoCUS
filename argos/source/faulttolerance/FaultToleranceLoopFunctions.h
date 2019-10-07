@@ -2,13 +2,17 @@
 #define GRADIENT_LOOP_FUNCTIONS_H_
 
 #include <vector>
+#include <queue>
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
 #include <argos3/plugins/robots/spiri/simulator/spiri_entity.h>
 #include "SpiriController.h"
 #include "SwarmManager.h"
+#include "SimplePlume.h"
+#include "PositionReading.h"
 #include <list>
 #include <cstdlib>
+#include <eigen3/Eigen/Dense>
 
 using namespace argos;
 using namespace std;
@@ -22,6 +26,9 @@ public:
 	void PostStep();
 	bool IsExperimentFinished();
 	void PostExperiment();
+  void Destroy();
+  SimplePlume getPlume() { return plume;}
+
 	std::vector<argos::CVector3> GetWaypoints() { return waypoints; }
 	
 	CColor GetFloorColor(const CVector2& p) { return CColor::WHITE; }
@@ -50,6 +57,8 @@ private:
   std::vector<Spiri_controller*> controllers;
   std::vector<argos::CVector3> waypoints;
   SwarmManager* swarmManager;
+  argos::CVector3 currentPosition;
+  std::list<PositionReading> readingQueue;
 
   long simulationTime = 0;
   bool healing = false;
@@ -63,6 +72,10 @@ private:
   void healFailedSwarm();
 
 	vector<Spiri_controller*> getNextFailures();
+
+  SimplePlume plume = SimplePlume(1000, 1000);
+
+  Eigen::Vector2f linearRegression(vector<PositionReading> vector);
 };
 
 #endif /* GRADIENT_LOOP_FUNCTIONS_H_ */

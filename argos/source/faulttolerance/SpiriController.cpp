@@ -309,4 +309,27 @@ vector<Spiri_controller *> Spiri_controller::getChildrenControllers() {
   return castControllers;
 }
 
+std::vector<PositionReading> Spiri_controller::getReadings() {
+  std::vector<PositionReading> readings;
+
+  CVector3 position = compassSensor->GetReading().Position;
+
+  Gradient_loop_functions& loopFunctions = static_cast<Gradient_loop_functions&>(CSimulator::GetInstance().GetLoopFunctions());
+  double valueAtPosition = loopFunctions.getPlume().getValue(position.GetX() * 10 + 500, position.GetY() * 10);
+  if(isnan(valueAtPosition)) {
+    valueAtPosition = 0;
+  }
+  PositionReading reading(location->getOffset(), valueAtPosition);
+
+  readings.push_back(reading);
+
+  for(ControllerBase* base : swarmManager->GetChildren(this)) {
+    for(PositionReading childReading : dynamic_cast<Spiri_controller*>(base)->getReadings()) {
+      readings.push_back(childReading);
+    }
+  }
+
+  return readings;
+}
+
 REGISTER_CONTROLLER(Spiri_controller, "Spiri_controller")

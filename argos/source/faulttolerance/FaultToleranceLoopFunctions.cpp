@@ -7,6 +7,8 @@
 
 void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
+  plume.Init();
+
   TConfigurationNode simNode  = GetNode(node, "simulation");
 
   GetNodeAttribute(simNode, "RMin", rmin);
@@ -66,13 +68,17 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   rootController->SetupHeir();
 }
 
+void Gradient_loop_functions::Destroy() {
+  plume.Destroy();
+}
+
 void Gradient_loop_functions::PostStep() {
   simulationTime++;
   for (int i = 0; i < droneToFail.size(); i++) {
     int failId = droneToFail.at(i);
     int failTime = droneToFailAtTime.at(i);
 
-    if (simulationTime == failTime) {
+    if (failId < controllers.size() && simulationTime == failTime) {
       controllers.at(failId)->fail();
     }
   }
@@ -83,7 +89,7 @@ void Gradient_loop_functions::PostStep() {
     if (simulationTime == failTime) {
       for(int j = 0; j < failCount; j++) {
         int failId = rand() % controllers.size();
-        if(controllers.at(failId)->failed) {
+        if (controllers.at(failId)->failed) {
           j--;
         } else {
           controllers.at(failId)->fail();
@@ -113,9 +119,27 @@ void Gradient_loop_functions::PostStep() {
         healing = false;
         LOG << "Healing took: " << (simulationTime - healStart) << endl;
       }
-      argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(++spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
-      rootController->AddRecursiveWaypoint(waypoint);
-      waypoints.push_back(waypoint);
+
+      std::vector<PositionReading> readings = rootController->getReadings();
+      for(PositionReading reading : readings) {
+        readingQueue.push_front(reading);
+      }
+      while(readingQueue.size() > 100) {
+        readingQueue.pop_back();
+      }
+      Eigen::Vector2f vector = linearRegression(readings);
+      if(vector.norm() > 0) {
+        currentPosition += argos::CVector3(vector(0), vector(1), 0);
+        cout << "currentPosition = " << currentPosition << endl;
+        rootController->AddRecursiveWaypoint(currentPosition);
+        waypoints.push_back(currentPosition);
+      }
+      else {
+        argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(++spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
+        currentPosition = waypoint;
+        rootController->AddRecursiveWaypoint(waypoint);
+        waypoints.push_back(waypoint);
+      }
     }
   }
 }
@@ -251,6 +275,35 @@ void Gradient_loop_functions::SetRootController(Spiri_controller *toReplace, Spi
   if(toReplace == rootController) {
     rootController = heir;
   }
+}
+
+Eigen::Vector2f Gradient_loop_functions::linearRegression(vector<PositionReading> readings) {
+
+  Eigen::MatrixXf A(readings.size(), 3);
+  Eigen::VectorXf b(readings.size());
+
+  int i = 0;
+  for(PositionReading reading : readings) {
+    A(i, 0) = 1;
+    A(i, 1) = reading.getLocation().GetX();
+    A(i, 2) = reading.getLocation().GetY();
+    //A(i, 3) = reading.getLocation().GetZ();
+    b(i) = reading.getValue();
+    i++;
+  }
+
+  cout << "A: " << A << endl;
+  cout << "b: " << b << endl;
+
+  Eigen::VectorXf x = (A.transpose() * A).ldlt().solve(A.transpose() * b);
+
+  cout << "The solution using normal equations is:" << x << endl;
+
+  Eigen::Vector2f x2;
+  x2 << x(1), x(2);
+  x2.normalize();
+
+  return x2;
 }
 
 REGISTER_LOOP_FUNCTIONS(Gradient_loop_functions, "Gradient_loop_functions")
