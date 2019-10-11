@@ -46,7 +46,6 @@ private:
   std::vector<argos::CVector3> waypoints;
 
   long simulationTime = 0;
-	argos::CVector3 buildArchimedesSpiralWaypoint(int index, double radius);
 
   void loadDroneFailures(string basic_string, string randomFailureString);
 

@@ -17,7 +17,3 @@ bool MoveToPosition::step() {
 
   return finished;
 }
-
-bool MoveToPosition::isFinished() {
-  return finished;
-}

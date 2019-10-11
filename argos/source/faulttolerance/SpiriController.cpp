@@ -11,40 +11,29 @@ void Spiri_controller::Init(TConfigurationNode& node) {
 void Spiri_controller::ControlStep() {
 
   if(!stopped) {
-    CVector3 position = compassSensor->GetReading().Position;
+    PositionReading reading = GetReading();
 
-    Gradient_loop_functions &loopFunctions = static_cast<Gradient_loop_functions &>(CSimulator::GetInstance().GetLoopFunctions());
-    double valueAtPosition = loopFunctions.getPlume().getValue(position.GetX() * 10 + 500, position.GetY() * 10);
-    if (isnan(valueAtPosition)) {
-      valueAtPosition = 0;
-    }
-
-    if (valueAtPosition > 0) {
-      cout << "Found value of " << valueAtPosition << endl;
+    if (reading.getValue() > 0) {
       movement->reset();
       MoveToPosition *stopMovement = new MoveToPosition(positionActuator, compassSensor);
-      stopMovement->init(position);
+      stopMovement->init(reading.getLocation());
       movement->add(stopMovement);
 
-      CVector3 normalizedDirection = position.Normalize();
+      CVector3 normalizedDirection = reading.getLocation().Normalize();
 
-      movement->add(new GasGradientDescentMovement(this, &loopFunctions, valueAtPosition, normalizedDirection));
+      Gradient_loop_functions &loopFunctions = static_cast<Gradient_loop_functions &>(CSimulator::GetInstance().GetLoopFunctions());
+      movement->add(new GasGradientDescentMovement(this, &loopFunctions, reading.getValue(), normalizedDirection));
 
       stopped = true;
     }
   }
 
-  finished = movement->step();
+  movement->step();
 }
 
 
 void Spiri_controller::Reset() {
-  finished = false;
   movement->reset();
-}
-
-bool Spiri_controller::IsFinished() {
-  return finished;
 }
 
 void Spiri_controller::AddWaypoint(CVector3 waypoint) {
@@ -62,32 +51,15 @@ void Spiri_controller::fail() {
   failed = true;
 }
 
-
-bool Spiri_controller::failureDetected() {
-  return failed;
-}
-
-std::vector<PositionReading> Spiri_controller::getReadings() {
-  std::vector<PositionReading> readings;
-
-  /*CVector3 position = compassSensor->GetReading().Position;
+PositionReading Spiri_controller::GetReading() {
+  CVector3 position = compassSensor->GetReading().Position;
 
   Gradient_loop_functions& loopFunctions = static_cast<Gradient_loop_functions&>(CSimulator::GetInstance().GetLoopFunctions());
   double valueAtPosition = loopFunctions.getPlume().getValue(position.GetX() * 10 + 500, position.GetY() * 10);
   if(isnan(valueAtPosition)) {
     valueAtPosition = 0;
   }
-  PositionReading reading(location->getOffset(), valueAtPosition);
-
-  readings.push_back(reading);
-
-  for(ControllerBase* base : swarmManager->GetChildren(this)) {
-    for(PositionReading childReading : dynamic_cast<Spiri_controller*>(base)->getReadings()) {
-      readings.push_back(childReading);
-    }
-  }*/
-
-  return readings;
+  return PositionReading(position, valueAtPosition);
 }
 
 REGISTER_CONTROLLER(Spiri_controller, "Spiri_controller")

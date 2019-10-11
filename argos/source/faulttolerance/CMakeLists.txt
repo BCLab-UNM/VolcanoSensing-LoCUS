@@ -21,9 +21,6 @@ add_library(Spiri_controller SHARED
 		MovementVector.cpp
 		MovementVector.h
 		Movement.h
-		Delay.cpp
-		Delay.h
-        Finishable.h
 		SimplePlume.cpp
 		SimplePlume.h
 		ColorUtil.cpp

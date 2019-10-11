@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include "MovementVector.h"
 #include "MoveToPosition.h"
-#include "Delay.h"
 #include "PositionReading.h"
 
 using namespace argos;
@@ -23,30 +22,19 @@ class Spiri_controller : public CCI_Controller, public CLoopFunctions {
 public:
   void Init(TConfigurationNode& node);
   void ControlStep();
-  bool IsFinished();
   void Reset();
   void fail();
+  bool IsFailed() {return failed;}
   void AddWaypoint(CVector3 waypoint);
   void AddMovement(Movement *move);
-  bool failureDetected();
-
-  bool failed = false;
-
-  std::vector<PositionReading> getReadings();
-
-  argos::CCI_QuadRotorPositionActuator* GetPositionActuator() { return positionActuator;}
-
-  argos::CCI_PositioningSensor* GetCompassSensor() { return compassSensor;}
+  PositionReading GetReading();
 
 private:
-
+  bool failed = false;
   bool stopped = false;
-  bool finished = false;
   MovementVector* movement;
   argos::CCI_PositioningSensor* compassSensor;
   argos::CCI_QuadRotorPositionActuator* positionActuator;
-
-  argos::CVector3 buildArchimedesSpiralWaypoint(int index, double radius);
 };
 
 #endif /* SPIRI_CONTROLLER_H_ */

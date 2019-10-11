@@ -60,7 +60,7 @@ void Gradient_loop_functions::PostStep() {
     if (simulationTime == failTime) {
       for(int j = 0; j < failCount; j++) {
         int failId = rand() % controllers.size();
-        if (controllers.at(failId)->failed) {
+        if (controllers.at(failId)->IsFailed()) {
           j--;
         } else {
           controllers.at(failId)->fail();
@@ -72,44 +72,17 @@ void Gradient_loop_functions::PostStep() {
   // TODO: movement?
 }
 
-argos::CVector3 Gradient_loop_functions::buildArchimedesSpiralWaypoint(int index, double radius) {
-  int indexLoop = index / points_per_rotation;
-  int indexMod = index % points_per_rotation;
-
-  double angle = index * 2 * M_PI / points_per_rotation;
-
-  if(loop[indexMod] != indexLoop) {
-    // https://www.comsol.com/blogs/how-to-build-a-parameterized-archimedean-spiral-geometry/
-    double b;
-    double point_radius;
-
-    if(index < points_per_rotation) {
-      b = radius / (2 * M_PI);
-      point_radius = b * angle;
-    } else {
-      point_radius = radii[indexMod] + radius;
-    }
-    radii[indexMod] = point_radius;
-    loop[indexMod] = indexLoop;
-  }
-
-  double point_radius = radii[index % points_per_rotation];
-
-  double altitude = 0;
-  double xoffset = point_radius * cos(angle); // in meters
-  double yoffset = point_radius * sin(angle);
-
-  argos::CVector3 waypoint(xoffset, yoffset, altitude);
-
-  return waypoint;
-}
-
 void Gradient_loop_functions::Reset() {
   simulationTime = 0;
 }
 
 bool Gradient_loop_functions::IsExperimentFinished() {
-  return false; // TODO
+  for(Spiri_controller* controller : controllers) {
+    if(controller->GetReading().getValue() > 0.95) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void Gradient_loop_functions::PostExperiment() {
