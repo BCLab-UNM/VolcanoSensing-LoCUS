@@ -11,7 +11,6 @@
 #include "PositionReading.h"
 #include <list>
 #include <cstdlib>
-#include <eigen3/Eigen/Dense>
 
 using namespace argos;
 using namespace std;
@@ -36,8 +35,6 @@ private:
 
   double stopRadius = 100;
 	static const int points_per_rotation = 10;
-	double radii[points_per_rotation];
-  double loop[points_per_rotation];
 	vector<int> droneToFail;
 	vector<int> droneToFailAtTime;
   vector<int> randomFail;

@@ -4,11 +4,11 @@
 
 void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
-  plume.Init();
 
   TConfigurationNode simNode  = GetNode(node, "simulation");
 
-  GetNodeAttribute(simNode, "StopCoverageRadius", stopRadius);
+  bool perturbPlume;
+  GetNodeAttribute(simNode, "PerturbPlume", perturbPlume);
   long seed = 0;
   GetNodeAttributeOrDefault(simNode, "Seed", seed, (long)0);
   string droneFailureString;
@@ -19,11 +19,14 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
   cout << "Configuration:"
           "\nradius:" << stopRadius <<
+          "\nperturbPlume: " << perturbPlume <<
           "\nseed:" << seed <<
           "\nfailures:" << droneFailureString <<
           "\nrandomfailures:" << randomFailureString << endl;
 
   srand(seed);
+
+  plume.Init(800 - (rand() % 1600), 800 - (rand() % 1600), perturbPlume);
 
   loadDroneFailures(droneFailureString, randomFailureString);
 
@@ -78,11 +81,11 @@ void Gradient_loop_functions::Reset() {
 
 bool Gradient_loop_functions::IsExperimentFinished() {
   for(Spiri_controller* controller : controllers) {
-    if(controller->GetReading().getValue() > 0.95) {
+    if(controller->GetReading().getValue() > 0.75) {
       return true;
     }
   }
-  return false;
+  return simulationTime > 100000;
 }
 
 void Gradient_loop_functions::PostExperiment() {

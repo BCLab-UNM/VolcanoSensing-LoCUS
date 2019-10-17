@@ -1,5 +1,5 @@
 # Install Base OS
-FROM ubuntu:latest
+FROM ubuntu:18.04
 
 # Install dependencies and set permissions
 RUN apt-get update --fix-missing

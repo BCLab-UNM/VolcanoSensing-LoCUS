@@ -17,7 +17,7 @@
   <controllers>
 
     <Spiri_controller id="Spiri"
-                         library="build/source/faulttolerance/libSpiri_controller">
+                      library="build/source/faulttolerance/libSpiri_controller">
       <actuators>
         <quadrotor_position implementation="default" />
       </actuators>
@@ -36,10 +36,8 @@
   <loop_functions library = "build/source/faulttolerance/libGradient_loop_functions"
                   label   = "Gradient_loop_functions">
     <!-- un-evolvable environment variables -->
-    <simulation RMin    = "{rmin}"
-                RMax    = "{rmax}"
-                Seed    = "{seed}"
-                StopCoverageRadius = "{coverage_radius}"
+    <simulation Seed    = "{seed}"
+                PerturbPlume = "{perturbPlume}"
                 RandomFailures = "{failures},{failtimestep}"/>
 
   </loop_functions>

@@ -6,20 +6,12 @@ def test(args):
     trial_runner.run_trial(args)
 
 def get_args():
-    parser = argparse.ArgumentParser(description='ARGoS Fault Tolerant Drone Simulator')
+    parser = argparse.ArgumentParser(description='ARGoS Baseline Fault Tolerant Drone Simulator')
 
     parser.add_argument(
-        '--rmin',
-        type=int,
-        default=1)
-    parser.add_argument(
-        '--rmax',
-        type=int,
-        default=1)
-    parser.add_argument(
-        '--coverage_radius',
-        type=int,
-        default=100)
+        '--perturbPlume',
+        type=str,
+        default='false')
     parser.add_argument(
         '--failtimestep',
         type=int,

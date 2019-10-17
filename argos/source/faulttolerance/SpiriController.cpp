@@ -37,10 +37,12 @@ void Spiri_controller::Reset() {
 }
 
 void Spiri_controller::AddWaypoint(CVector3 waypoint) {
-  MoveToPosition* moveTo = new MoveToPosition(positionActuator, compassSensor);
-  moveTo->init(waypoint);
+  if(!failed) {
+    MoveToPosition *moveTo = new MoveToPosition(positionActuator, compassSensor);
+    moveTo->init(waypoint);
 
-  movement->add(moveTo);
+    movement->add(moveTo);
+  }
 }
 
 void Spiri_controller::AddMovement(Movement *move) {
@@ -49,13 +51,14 @@ void Spiri_controller::AddMovement(Movement *move) {
 
 void Spiri_controller::fail() {
   failed = true;
+  Reset();
 }
 
 PositionReading Spiri_controller::GetReading() {
   CVector3 position = compassSensor->GetReading().Position;
 
   Gradient_loop_functions& loopFunctions = static_cast<Gradient_loop_functions&>(CSimulator::GetInstance().GetLoopFunctions());
-  double valueAtPosition = loopFunctions.getPlume().getValue(position.GetX() * 10 + 500, position.GetY() * 10);
+  double valueAtPosition = loopFunctions.getPlume().getValue(position.GetX() * 10, position.GetY() * 10);
   if(isnan(valueAtPosition)) {
     valueAtPosition = 0;
   }
