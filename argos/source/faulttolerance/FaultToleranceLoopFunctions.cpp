@@ -149,16 +149,18 @@ void Gradient_loop_functions::PostStep() {
         healing = false;
         LOG << "Healing took: " << (simulationTime - healStart) << endl;
       }
+      int currentShells = rootController->GetMaximumDepth();
+      std::vector<PositionReading> allReadings = rootController->getReadings(currentShells);
       int currentFullShells = rootController->GetMinimumDepth();
       std::vector<PositionReading> readings = rootController->getReadings(currentFullShells);
-      for(PositionReading reading : readings) {
-        readingQueue.push_front(reading);
-      }
-      while(readingQueue.size() > 100) {
-        readingQueue.pop_back();
-      }
-      Eigen::Vector2f vector = linearRegression(readings);
-      if(vector.norm() > 0) {
+      Eigen::Vector2f vector = linearRegression(allReadings);
+      Eigen::Vector2f fullShellsVector = linearRegression(readings);
+      if(fullShellsVector.norm() > 0) {
+        currentPosition += argos::CVector3(fullShellsVector(0),  fullShellsVector(1), 0);
+        currentPosition += argos::CVector3(rand() % 100 / 1000.0, rand() % 100 / 1000.0, 0);
+        rootController->AddRecursiveWaypoint(currentPosition);
+        waypoints.push_back(currentPosition);
+      } else if(vector.norm() > 0) {
         currentPosition += argos::CVector3(vector(0),  vector(1), 0);
         currentPosition += argos::CVector3(rand() % 100 / 1000.0, rand() % 100 / 1000.0, 0);
         rootController->AddRecursiveWaypoint(currentPosition);

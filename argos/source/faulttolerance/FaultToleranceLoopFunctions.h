@@ -57,7 +57,6 @@ private:
   std::vector<argos::CVector3> waypoints;
   SwarmManager* swarmManager;
   argos::CVector3 currentPosition;
-  std::list<PositionReading> readingQueue;
 
   long simulationTime = 0;
   bool healing = false;
