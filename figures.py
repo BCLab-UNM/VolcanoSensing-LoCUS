@@ -32,7 +32,7 @@ def getBaselineResults(result_name, swarmsize, perturbed,  failureProbability, p
 # parallel $CMD_STR ::: 30 ::: 3 ::: 3 ::: false ::: 0 ::: 1 0.1 0.01 0.001 0.0001 0.00001 0.000001 0.0000001 0.00000001 ::: $(seq 100)
 
 swarmsizes = range(1, 30)
-failures = ['1', '0.1', '0.01', '0.001', '0.0001', '0.00001', '0.000001', '0.0000001', '0.00000001']
+failures = ['0.1', '0.01', '0.001', '0.0001', '0.00001', '0.000001', '0.0000001', '0.00000001']
 samples = range(1, 101)
 failureTime = {}
 plumeFailureTime = {}
@@ -52,7 +52,7 @@ ftper_failureTime = {}
 for swarmsize in swarmsizes:
     ftper_failureTime.update({swarmsize : []})
     for s in samples:
-        failTime = processFile(getFTResults('ft_per_swarmsize', swarmsize, 3, 3, True, 0, 0, s))['time'];
+        failTime = processFile(getFTResults('ft_per_swarmsize', swarmsize, 3, 3, True, 0, 0, s))
         if failTime is not None:
             ftper_failureTime.get(swarmsize).append(failTime)
 
@@ -63,7 +63,7 @@ ft_swarmsize_failureTime = {}
 for swarmsize in swarmsizes:
     ft_swarmsize_failureTime.update({swarmsize : []})
     for s in samples:
-        ft_swarmsize_failureTime.get(swarmsize).append(processFile(getFTResults('ft_swarmsize', swarmsize, 3, 3, False, 0, 0, s))['time']);
+        ft_swarmsize_failureTime.get(swarmsize).append(processFile(getFTResults('ft_swarmsize', swarmsize, 3, 3, False, 0, 0, s)))
 
 # Baseline Failures
 # parallel $CMD_STR ::: 30 ::: false ::: 1 0.1 0.01 0.001 0.0001 0.00001 0.000001 0.0000001 0.00000001 0.00000001 ::: 0 ::: $(seq 100)
@@ -85,16 +85,16 @@ baseline_per_swarmsize_failureTime = {}
 for swarmsize in swarmsizes:
     baseline_per_swarmsize_failureTime.update({swarmsize : []})
     for s in samples:
-        baseline_per_swarmsize_failureTime.get(swarmsize).append(processFile(getBaselineResults('unc_per_swarmsize', swarmsize, True, 0, 0, s))['time']);
+        baseline_per_swarmsize_failureTime.get(swarmsize).append(processFile(getBaselineResults('unc_per_swarmsize', swarmsize, True, 0, 0, s)))
 
 # Baseline Swarm Size
 # parallel $CMD_STR ::: $(seq 100) ::: false ::: 0 ::: 0 ::: $(seq 100)
 baseline_swarmsize = {}
 
-for swarmsize in range(1, 101):
+for swarmsize in swarmsizes:
     baseline_swarmsize.update({swarmsize : []})
     for s in samples:
-        baseline_swarmsize.get(swarmsize).append(processFile(getBaselineResults('unc_swarmsize', swarmsize, False, 0, 0, s))['time']);
+        baseline_swarmsize.get(swarmsize).append(processFile(getBaselineResults('unc_swarmsize', swarmsize, False, 0, 0, s)))
 
 # Swarm size
 plt.clf()
@@ -103,15 +103,15 @@ x = []
 err = []
 
 for key in swarmsizes:
-    x.append(np.mean(ft_swarmsize_failureTime[key]))    
-    err.append(np.std(ft_swarmsize_failureTime[key]))
+    x.append(np.mean([value['time'] for value in ft_swarmsize_failureTime[key]]))
+    err.append(np.std([value['time'] for value in ft_swarmsize_failureTime[key]]))
 
 x2 = []
 err2 = []
 
 for key in swarmsizes:
-    x2.append(np.mean(baseline_swarmsize[key]))    
-    err2.append(np.std(baseline_swarmsize[key]))
+    x2.append(np.mean([value['time'] for value in baseline_swarmsize[key]]))
+    err2.append(np.std([value['time'] for value in baseline_swarmsize[key]]))
 
 
 plt.errorbar(swarmsizes, x, err, fmt='-o', label="Fault Tolerant Swarm")
@@ -120,36 +120,36 @@ plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="Uncoordinated Swarm")
 pp = PdfPages('figs/swarmSize.pdf')
 plt.xlabel('Swarm Size')
 plt.ylabel('Simulation Timesteps')
-plt.title('Time to Find Plume Source')
+plt.title('Time to Find Plume Source by Swarm Size')
 plt.legend()
 pp.savefig()
 pp.close()
 
 
-# Perterbed
+# Perturbed
 plt.clf()
 
 x = []
 err = []
 
 for key in swarmsizes:
-    x.append(np.mean(ftper_failureTime[key]))    
-    err.append(np.std(ftper_failureTime[key]))
+    x.append(np.mean([value['time'] for value in ftper_failureTime[key]]))
+    err.append(np.std([value['time'] for value in ftper_failureTime[key]]))
 
 x2 = []
 err2 = []
 
 for key in swarmsizes:
-    x2.append(np.mean(baseline_per_swarmsize_failureTime[key]))    
-    err2.append(np.std(baseline_per_swarmsize_failureTime[key]))
+    x2.append(np.mean([value['time'] for value in baseline_per_swarmsize_failureTime[key]]))
+    err2.append(np.std([value['time'] for value in baseline_per_swarmsize_failureTime[key]]))
 
 plt.errorbar(swarmsizes, x, err, fmt='-o', label="Fault Tolerant Swarm")
 plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="Uncoordinated Swarm")
 
-pp = PdfPages('figs/perterbed.pdf')
+pp = PdfPages('figs/perturbed.pdf')
 plt.xlabel('Swarm Size')
 plt.ylabel('Simulation Timesteps')
-plt.title('Time to Find Plume Source')
+plt.title('Time to Find Perturbed Plume Source by Swarm Size')
 plt.legend()
 pp.savefig()
 pp.close()
@@ -180,7 +180,7 @@ pp = PdfPages('figs/failures.pdf')
 plt.xlabel('Failure Probability')
 plt.xscale('log')       
 plt.ylabel('Simulation Timesteps')
-plt.title('Time to Find Plume Source')
+plt.title('Time to Find Plume Source With Failures')
 plt.legend()
 pp.savefig()
 pp.close()
@@ -193,7 +193,8 @@ success = []
 baselinesuccess = []
 
 for key in failures:
-    success.append(len(failureTime[key]))
+    completionTime = [value['time'] for value in failureTime[key] if 'time' in value and not value['failed']]
+    success.append(len(completionTime))
 
 x2 = []
 err2 = []
@@ -209,7 +210,7 @@ pp = PdfPages('figs/failureSuccess.pdf')
 plt.xlabel('Failure Probability')
 plt.xscale('log')       
 plt.ylabel('Successfully Found Max Flux')
-plt.title('Time to Find Plume Source')
+plt.title('Count of Swarms to Find Plume Source with General Failures')
 plt.legend()
 pp.savefig()
 pp.close()
@@ -240,7 +241,7 @@ pp = PdfPages('figs/plumeFailures.pdf')
 plt.xlabel('Failure Probability')
 plt.xscale('log')       
 plt.ylabel('Simulation Timesteps')
-plt.title('Time to Find Plume Source')
+plt.title('Time to Find Plume Source with Plume Failures')
 plt.legend()
 pp.savefig()
 pp.close()
@@ -267,10 +268,133 @@ plt.plot(failures, success, label="Fault Toleant Swarm Successes")
 plt.plot(failures, baselinesuccess, label="Uncoordinated Swarm Successes")
 
 pp = PdfPages('figs/plumeFailureSuccess.pdf')
-plt.xlabel('Failure Probability')
+plt.xlabel('Plume Failure Probability')
 plt.xscale('log')       
 plt.ylabel('Successfully Found Max Flux')
-plt.title('Time to Find Plume Source')
+plt.title('Count of Swarms to Find Plume Source with Plume Failures')
 plt.legend()
 pp.savefig()
 pp.close()
+
+# Time to initial plume contact
+plt.clf()
+
+x = []
+err = []
+
+for key in swarmsizes:
+    contactTime = [value['plumeEncountered'] for value in ft_swarmsize_failureTime[key] if 'plumeEncountered' in value]
+    x.append(np.mean(contactTime))
+    err.append(np.std(contactTime))
+
+x2 = []
+err2 = []
+
+for key in swarmsizes:
+    contactTime = [value['plumeEncountered'] for value in baseline_swarmsize[key] if 'plumeEncountered' in value]
+    x2.append(np.mean(contactTime))
+    err2.append(np.std(contactTime))
+
+plt.errorbar(swarmsizes, x, err, fmt='-o', label="Fault Tolerant Swarm")
+plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="Uncoordinated Swarm")
+
+pp = PdfPages('figs/plumeEncountered.pdf')
+plt.xlabel('Swarm Size')
+plt.ylabel('Simulation Timesteps')
+plt.title('Time to Initial Plume Contact')
+plt.legend()
+pp.savefig()
+pp.close()
+
+# Once plume is encountered, how long to max flux?
+plt.clf()
+
+x = []
+err = []
+
+for key in swarmsizes:
+    contactTime = [value['time'] - value['plumeEncountered'] for value in ft_swarmsize_failureTime[key] if 'plumeEncountered' in value and 'time' in value and not value['failed']]
+    x.append(np.mean(contactTime))
+    err.append(np.std(contactTime))
+
+x2 = []
+err2 = []
+
+for key in swarmsizes:
+    contactTime = [value['time'] - value['plumeEncountered'] for value in baseline_swarmsize[key] if 'plumeEncountered' in value and 'time' in value and not value['failed']]
+    x2.append(np.mean(contactTime))
+    err2.append(np.std(contactTime))
+
+plt.errorbar(swarmsizes, x, err, fmt='-o', label="Fault Tolerant Swarm")
+plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="Uncoordinated Swarm")
+
+pp = PdfPages('figs/maxFlux.pdf')
+plt.xlabel('Swarm Size')
+plt.ylabel('Simulation Timesteps')
+plt.title('Time to Max Flux after Plume Contact')
+plt.legend()
+pp.savefig()
+pp.close()
+
+# Time to initial perturbed plume contact
+plt.clf()
+
+x = []
+err = []
+
+for key in swarmsizes:
+    contactTime = [value['plumeEncountered'] for value in ftper_failureTime[key] if 'plumeEncountered' in value]
+    x.append(np.mean(contactTime))
+    err.append(np.std(contactTime))
+
+x2 = []
+err2 = []
+
+for key in swarmsizes:
+    contactTime = [value['plumeEncountered'] for value in baseline_per_swarmsize_failureTime[key] if 'plumeEncountered' in value]
+    x2.append(np.mean(contactTime))
+    err2.append(np.std(contactTime))
+
+plt.errorbar(swarmsizes, x, err, fmt='-o', label="Fault Tolerant Swarm")
+plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="Uncoordinated Swarm")
+
+pp = PdfPages('figs/perturbedPlumeEncountered.pdf')
+plt.xlabel('Swarm Size')
+plt.ylabel('Simulation Timesteps')
+plt.title('Time to Initial Perturbed Plume Contact')
+plt.legend()
+pp.savefig()
+pp.close()
+
+# Once plume is encountered, how long to max flux?
+plt.clf()
+
+x = []
+err = []
+
+for key in swarmsizes:
+    contactTime = [value['time'] - value['plumeEncountered'] for value in ftper_failureTime[key] if 'plumeEncountered' in value and 'time' in value and not value['failed']]
+    x.append(np.mean(contactTime))
+    err.append(np.std(contactTime))
+
+x2 = []
+err2 = []
+
+for key in swarmsizes:
+    contactTime = [value['time'] - value['plumeEncountered'] for value in baseline_per_swarmsize_failureTime[key] if 'plumeEncountered' in value and 'time' in value and not value['failed']]
+    x2.append(np.mean(contactTime))
+    err2.append(np.std(contactTime))
+
+plt.errorbar(swarmsizes, x, err, fmt='-o', label="Fault Tolerant Swarm")
+plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="Uncoordinated Swarm")
+
+pp = PdfPages('figs/perturbedMaxFlux.pdf')
+plt.xlabel('Swarm Size')
+plt.ylabel('Simulation Timesteps')
+plt.title('Time to Max Flux after Perturbed Plume Contact')
+plt.legend()
+pp.savefig()
+pp.close()
+
+# As failures go how many reach max flux?
+
