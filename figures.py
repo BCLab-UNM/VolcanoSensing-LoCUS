@@ -1,0 +1,288 @@
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+import csv
+import numpy as np	
+
+def is_not_blank(s):
+    return bool(s and s.strip())
+
+def processFile(filename):
+    data = {}
+    data['failed'] = False
+    with open(filename, 'r') as fp:
+        for cnt, line in enumerate(fp):
+            if line.startswith("Time:"):
+                data['time'] = int(line[5:len(line) - 1:])
+            if line.startswith("[1;32mencountered plume:"):
+                data['plumeEncountered'] = int(line[37:len(line) - 5:])
+            if line.startswith("[1;32mHealing took:"):
+                data['healingTook'] = int(line[32:len(line) - 5:])
+            if line.startswith("[1;32mfailed:true"):
+                data['failed'] = True
+    return data
+
+def getFTResults(result_name, swarmsize, rmin, rmax, perturbed, failureProbability, plumeFailureProbability, seed):
+    return "results/{}/result_{}_{}_{}_{}_{}_{}_{}.txt".format(result_name, swarmsize, rmin, rmax, perturbed, failureProbability, plumeFailureProbability, seed).lower()
+
+
+def getBaselineResults(result_name, swarmsize, perturbed,  failureProbability, plumeFailureProbability, seed):
+    return "results/{}/result_{}_{}_{}_{}_{}.txt".format(result_name, swarmsize, perturbed,  failureProbability, plumeFailureProbability, seed).lower()
+
+# FT Failures
+# parallel $CMD_STR ::: 30 ::: 3 ::: 3 ::: false ::: 1 0.1 0.01 0.001 0.0001 0.00001 0.000001 0.0000001 0.00000001 ::: 0 ::: $(seq 100)
+# parallel $CMD_STR ::: 30 ::: 3 ::: 3 ::: false ::: 0 ::: 1 0.1 0.01 0.001 0.0001 0.00001 0.000001 0.0000001 0.00000001 ::: $(seq 100)
+
+swarmsizes = range(1, 30)
+failures = ['1', '0.1', '0.01', '0.001', '0.0001', '0.00001', '0.000001', '0.0000001', '0.00000001']
+samples = range(1, 101)
+failureTime = {}
+plumeFailureTime = {}
+
+for failureCount in failures:
+    failureTime.update({failureCount : []})
+    plumeFailureTime.update({failureCount : []})
+    for s in samples:
+        failFile = getFTResults('ft_failures', 10, 3, 3, False, failureCount, 0, s)
+        results = processFile(failFile)
+        if 'time' in results and not results['failed']:
+            failureTime.get(failureCount).append(results['time'])
+        failFile = getFTResults('ft_failures', 10, 3, 3, False, 0, failureCount, s)
+        results = processFile(failFile)
+        if 'time' in results and not results['failed']:
+            plumeFailureTime.get(failureCount).append(results['time'])
+
+
+# FT Perturbed
+# parallel $CMD_STR ::: $(seq 100) ::: 3 ::: 3 ::: true ::: 0 ::: 0 ::: $(seq 100)
+ftper_failureTime = {}
+
+for swarmsize in swarmsizes:
+    ftper_failureTime.update({swarmsize : []})
+    for s in samples:
+        failTime = processFile(getFTResults('ft_per_swarmsize', swarmsize, 3, 3, True, 0, 0, s))['time'];
+        if failTime is not None:
+            ftper_failureTime.get(swarmsize).append(failTime)
+
+# FT Swarm Size
+# parallel $CMD_STR ::: $(seq 100) ::: 3 ::: 3 ::: false ::: 0 ::: 0 ::: $(seq 100)
+ft_swarmsize_failureTime = {}
+
+for swarmsize in swarmsizes:
+    ft_swarmsize_failureTime.update({swarmsize : []})
+    for s in samples:
+        ft_swarmsize_failureTime.get(swarmsize).append(processFile(getFTResults('ft_swarmsize', swarmsize, 3, 3, False, 0, 0, s))['time']);
+
+# Baseline Failures
+# parallel $CMD_STR ::: 30 ::: false ::: 1 0.1 0.01 0.001 0.0001 0.00001 0.000001 0.0000001 0.00000001 0.00000001 ::: 0 ::: $(seq 100)
+# parallel $CMD_STR ::: 30 ::: false ::: 0 ::: 1 0.1 0.01 0.001 0.0001 0.00001 0.000001 0.0000001 0.00000001 0.00000001 ::: $(seq 100)
+baseline_swarmsize_failureTime = {}
+baseline_swarmsize_plumeFailureTime = {}
+    
+for failureCount in failures:
+    baseline_swarmsize_failureTime.update({failureCount : []})
+    baseline_swarmsize_plumeFailureTime.update({failureCount : []})
+    for s in samples:
+        failFile = getBaselineResults('unc_failures', 10, False, failureCount, 0, s)
+        results = processFile(failFile)
+        if 'time' in results and not results['failed']:
+            baseline_swarmsize_failureTime.get(failureCount).append(results['time'])
+        failFile = getBaselineResults('unc_failures', 10, False, 0, failureCount, s)
+        results = processFile(failFile)
+        if 'time' in results and not results['failed']:
+            baseline_swarmsize_plumeFailureTime.get(failureCount).append(results['time'])
+
+# Baseline Perturbed
+# parallel $CMD_STR ::: $(seq 100) ::: true ::: 0 ::: 0 ::: $(seq 100)
+baseline_per_swarmsize_failureTime = {}
+
+for swarmsize in swarmsizes:
+    baseline_per_swarmsize_failureTime.update({swarmsize : []})
+    for s in samples:
+        baseline_per_swarmsize_failureTime.get(swarmsize).append(processFile(getBaselineResults('unc_per_swarmsize', swarmsize, True, 0, 0, s))['time']);
+
+# Baseline Swarm Size
+# parallel $CMD_STR ::: $(seq 100) ::: false ::: 0 ::: 0 ::: $(seq 100)
+baseline_swarmsize = {}
+
+for swarmsize in range(1, 101):
+    baseline_swarmsize.update({swarmsize : []})
+    for s in samples:
+        baseline_swarmsize.get(swarmsize).append(processFile(getBaselineResults('unc_swarmsize', swarmsize, False, 0, 0, s))['time']);
+
+# Swarm size
+plt.clf()
+
+x = []
+err = []
+
+for key in swarmsizes:
+    x.append(np.mean(ft_swarmsize_failureTime[key]))    
+    err.append(np.std(ft_swarmsize_failureTime[key]))
+
+x2 = []
+err2 = []
+
+for key in swarmsizes:
+    x2.append(np.mean(baseline_swarmsize[key]))    
+    err2.append(np.std(baseline_swarmsize[key]))
+
+
+plt.errorbar(swarmsizes, x, err, fmt='-o', label="Fault Tolerant Swarm")
+plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="Uncoordinated Swarm")
+
+pp = PdfPages('figs/swarmSize.pdf')
+plt.xlabel('Swarm Size')
+plt.ylabel('Simulation Timesteps')
+plt.title('Time to Find Plume Source')
+plt.legend()
+pp.savefig()
+pp.close()
+
+
+# Perterbed
+plt.clf()
+
+x = []
+err = []
+
+for key in swarmsizes:
+    x.append(np.mean(ftper_failureTime[key]))    
+    err.append(np.std(ftper_failureTime[key]))
+
+x2 = []
+err2 = []
+
+for key in swarmsizes:
+    x2.append(np.mean(baseline_per_swarmsize_failureTime[key]))    
+    err2.append(np.std(baseline_per_swarmsize_failureTime[key]))
+
+plt.errorbar(swarmsizes, x, err, fmt='-o', label="Fault Tolerant Swarm")
+plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="Uncoordinated Swarm")
+
+pp = PdfPages('figs/perterbed.pdf')
+plt.xlabel('Swarm Size')
+plt.ylabel('Simulation Timesteps')
+plt.title('Time to Find Plume Source')
+plt.legend()
+pp.savefig()
+pp.close()
+
+# Failures
+plt.clf()
+
+x = []
+err = []
+success = []
+baselinesuccess = []
+
+for key in failures:
+    x.append(np.mean(failureTime[key]))    
+    err.append(np.std(failureTime[key]))
+
+x2 = []
+err2 = []
+
+for key in failures:
+    x2.append(np.mean(baseline_swarmsize_failureTime[key]))    
+    err2.append(np.std(baseline_swarmsize_failureTime[key]))
+
+plt.errorbar(failures, x, err, fmt='-o', label="Fault Tolerant Swarm")
+plt.errorbar(failures, x2, err2, fmt='-o', label="Uncoordinated Swarm")
+
+pp = PdfPages('figs/failures.pdf')
+plt.xlabel('Failure Probability')
+plt.xscale('log')       
+plt.ylabel('Simulation Timesteps')
+plt.title('Time to Find Plume Source')
+plt.legend()
+pp.savefig()
+pp.close()
+
+# Failure Success
+
+plt.clf()
+
+success = []
+baselinesuccess = []
+
+for key in failures:
+    success.append(len(failureTime[key]))
+
+x2 = []
+err2 = []
+
+for key in failures:
+    baselinesuccess.append(len(baseline_swarmsize_failureTime[key]))
+
+plt.plot(failures, success, label="Fault Toleant Swarm Successes")
+plt.plot(failures, baselinesuccess, label="Uncoordinated Swarm Successes")
+
+pp = PdfPages('figs/failureSuccess.pdf')
+plt.xlabel('Failure Probability')
+plt.xscale('log')       
+plt.ylabel('Successfully Found Max Flux')
+plt.title('Time to Find Plume Source')
+plt.legend()
+pp.savefig()
+pp.close()
+
+# Plume Failures
+plt.clf()
+
+x = []
+err = []
+success = []
+baselinesuccess = []
+
+for key in failures:
+    x.append(np.mean(plumeFailureTime[key]))    
+    err.append(np.std(plumeFailureTime[key]))
+    success.append(len(plumeFailureTime[key]))
+
+x2 = []
+err2 = []
+
+for key in failures:
+    x2.append(np.mean(baseline_swarmsize_plumeFailureTime[key]))    
+    err2.append(np.std(baseline_swarmsize_plumeFailureTime[key]))
+    baselinesuccess.append(len(baseline_swarmsize_plumeFailureTime[key]))
+
+plt.errorbar(failures, x, err, fmt='-o', label="Fault Tolerant Swarm")
+plt.errorbar(failures, x2, err2, fmt='-o', label="Uncoordinated Swarm")
+
+pp = PdfPages('figs/plumeFailures.pdf')
+plt.xlabel('Failure Probability')
+plt.xscale('log')       
+plt.ylabel('Simulation Timesteps')
+plt.title('Time to Find Plume Source')
+plt.legend()
+pp.savefig()
+pp.close()
+
+# Plume Failure Success
+
+plt.clf()
+
+success = []
+baselinesuccess = []
+
+for key in failures:
+    success.append(len(plumeFailureTime[key]))
+
+x2 = []
+err2 = []
+
+for key in failures:
+    baselinesuccess.append(len(baseline_swarmsize_plumeFailureTime[key]))
+
+plt.plot(failures, success, label="Fault Toleant Swarm Successes")
+plt.plot(failures, baselinesuccess, label="Uncoordinated Swarm Successes")
+
+pp = PdfPages('figs/plumeFailureSuccess.pdf')
+plt.xlabel('Failure Probability')
+plt.xscale('log')       
+plt.ylabel('Successfully Found Max Flux')
+plt.title('Time to Find Plume Source')
+plt.legend()
+pp.savefig()
+pp.close()

@@ -5,3 +5,7 @@ build
 cmake-build-debug
 
 argos/experiments/coverage/*
+
+figs/*
+
+results/*
