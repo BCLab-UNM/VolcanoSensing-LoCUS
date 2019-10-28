@@ -24,7 +24,6 @@ def processFile(filename):
 def getFTResults(result_name, swarmsize, rmin, rmax, perturbed, failureProbability, plumeFailureProbability, seed):
     return "results/{}/result_{}_{}_{}_{}_{}_{}_{}.txt".format(result_name, swarmsize, rmin, rmax, perturbed, failureProbability, plumeFailureProbability, seed).lower()
 
-
 def getBaselineResults(result_name, swarmsize, perturbed,  failureProbability, plumeFailureProbability, seed):
     return "results/{}/result_{}_{}_{}_{}_{}.txt".format(result_name, swarmsize, perturbed,  failureProbability, plumeFailureProbability, seed).lower()
 
@@ -42,14 +41,8 @@ for failureCount in failures:
     failureTime.update({failureCount : []})
     plumeFailureTime.update({failureCount : []})
     for s in samples:
-        failFile = getFTResults('ft_failures', 10, 3, 3, False, failureCount, 0, s)
-        results = processFile(failFile)
-        if 'time' in results and not results['failed']:
-            failureTime.get(failureCount).append(results['time'])
-        failFile = getFTResults('ft_failures', 10, 3, 3, False, 0, failureCount, s)
-        results = processFile(failFile)
-        if 'time' in results and not results['failed']:
-            plumeFailureTime.get(failureCount).append(results['time'])
+        failureTime.get(failureCount).append(processFile(getFTResults('ft_failures', 10, 3, 3, False, failureCount, 0, s)))
+        plumeFailureTime.get(failureCount).append(processFile(getFTResults('ft_failures', 10, 3, 3, False, 0, failureCount, s)))
 
 
 # FT Perturbed
@@ -82,14 +75,8 @@ for failureCount in failures:
     baseline_swarmsize_failureTime.update({failureCount : []})
     baseline_swarmsize_plumeFailureTime.update({failureCount : []})
     for s in samples:
-        failFile = getBaselineResults('unc_failures', 10, False, failureCount, 0, s)
-        results = processFile(failFile)
-        if 'time' in results and not results['failed']:
-            baseline_swarmsize_failureTime.get(failureCount).append(results['time'])
-        failFile = getBaselineResults('unc_failures', 10, False, 0, failureCount, s)
-        results = processFile(failFile)
-        if 'time' in results and not results['failed']:
-            baseline_swarmsize_plumeFailureTime.get(failureCount).append(results['time'])
+        baseline_swarmsize_failureTime.get(failureCount).append(processFile(getBaselineResults('unc_failures', 10, False, failureCount, 0, s)))
+        baseline_swarmsize_plumeFailureTime.get(failureCount).append(processFile(getBaselineResults('unc_failures', 10, False, 0, failureCount, s)))
 
 # Baseline Perturbed
 # parallel $CMD_STR ::: $(seq 100) ::: true ::: 0 ::: 0 ::: $(seq 100)
@@ -172,19 +159,19 @@ plt.clf()
 
 x = []
 err = []
-success = []
-baselinesuccess = []
 
 for key in failures:
-    x.append(np.mean(failureTime[key]))    
-    err.append(np.std(failureTime[key]))
+    completionTime = [value['time'] for value in failureTime[key] if 'time' in value and not value['failed']]
+    x.append(np.mean(completionTime))
+    err.append(np.std(completionTime))
 
 x2 = []
 err2 = []
 
 for key in failures:
-    x2.append(np.mean(baseline_swarmsize_failureTime[key]))    
-    err2.append(np.std(baseline_swarmsize_failureTime[key]))
+    completionTime = [value['time'] for value in baseline_swarmsize_failureTime[key] if 'time' in value and not value['failed']]
+    x2.append(np.mean(completionTime))
+    err2.append(np.std(completionTime))
 
 plt.errorbar(failures, x, err, fmt='-o', label="Fault Tolerant Swarm")
 plt.errorbar(failures, x2, err2, fmt='-o', label="Uncoordinated Swarm")
@@ -212,7 +199,8 @@ x2 = []
 err2 = []
 
 for key in failures:
-    baselinesuccess.append(len(baseline_swarmsize_failureTime[key]))
+    completionTime = [value['time'] for value in baseline_swarmsize_failureTime[key] if 'time' in value and not value['failed']]
+    baselinesuccess.append(len(completionTime))
 
 plt.plot(failures, success, label="Fault Toleant Swarm Successes")
 plt.plot(failures, baselinesuccess, label="Uncoordinated Swarm Successes")
@@ -231,21 +219,19 @@ plt.clf()
 
 x = []
 err = []
-success = []
-baselinesuccess = []
 
 for key in failures:
-    x.append(np.mean(plumeFailureTime[key]))    
-    err.append(np.std(plumeFailureTime[key]))
-    success.append(len(plumeFailureTime[key]))
+    completionTime = [value['time'] for value in plumeFailureTime[key] if 'time' in value and not value['failed']]
+    x.append(np.mean(completionTime))
+    err.append(np.std(completionTime))
 
 x2 = []
 err2 = []
 
 for key in failures:
-    x2.append(np.mean(baseline_swarmsize_plumeFailureTime[key]))    
-    err2.append(np.std(baseline_swarmsize_plumeFailureTime[key]))
-    baselinesuccess.append(len(baseline_swarmsize_plumeFailureTime[key]))
+    completionTime = [value['time'] for value in baseline_swarmsize_plumeFailureTime[key] if 'time' in value and not value['failed']]
+    x2.append(np.mean(completionTime))
+    err2.append(np.std(completionTime))
 
 plt.errorbar(failures, x, err, fmt='-o', label="Fault Tolerant Swarm")
 plt.errorbar(failures, x2, err2, fmt='-o', label="Uncoordinated Swarm")
@@ -267,13 +253,15 @@ success = []
 baselinesuccess = []
 
 for key in failures:
-    success.append(len(plumeFailureTime[key]))
+    completionTime = [value['time'] for value in plumeFailureTime[key] if 'time' in value and not value['failed']]
+    success.append(len(completionTime))
 
 x2 = []
 err2 = []
 
 for key in failures:
-    baselinesuccess.append(len(baseline_swarmsize_plumeFailureTime[key]))
+    completionTime = [value['time'] for value in baseline_swarmsize_plumeFailureTime[key] if 'time' in value and not value['failed']]
+    baselinesuccess.append(len(completionTime))
 
 plt.plot(failures, success, label="Fault Toleant Swarm Successes")
 plt.plot(failures, baselinesuccess, label="Uncoordinated Swarm Successes")
