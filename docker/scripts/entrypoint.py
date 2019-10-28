@@ -13,17 +13,17 @@ def get_args():
         type=str,
         default='false')
     parser.add_argument(
-        '--failtimestep',
-        type=int,
-        default=1000)
+        '--failureProbability',
+        type=str,
+        default='0')
+    parser.add_argument(
+        '--plumeFailureProbability',
+        type=str,
+        default='0')
     parser.add_argument(
         '--swarmsize',
         type=int,
         default=1)
-    parser.add_argument(
-        '--failures',
-        type=int,
-        default=0)
     parser.add_argument(
         '--seed',
         type=int,

@@ -3,18 +3,21 @@
 bool SpokeSpiralSearch::step() {
 
   controller->AddWaypoint(CVector3(0, 0, 10));
-  CVector3 randomWaypoint = CVector3(rand() % 200 - 100, rand() % 200 - 100, 10);
 
-  double length = randomWaypoint.Length();
-  for(int i = 0; i < length; i++) {
-    controller->AddWaypoint(CVector3(i * randomWaypoint.GetX() / length, i * randomWaypoint.GetY() / length, 10));
+  double theta = (1.0 * rand() / RAND_MAX) * 2 * M_PI;
+
+  double randx = cos(theta);
+  double randy = sin(theta);
+
+  for(int i = 0; i < radius; i++) {
+    controller->AddWaypoint(CVector3(i * randx, i * randy, 10));
   }
-  controller->AddWaypoint(randomWaypoint);
-  for(int i = length; i > 0; i--) {
-    controller->AddWaypoint(CVector3(i * randomWaypoint.GetX() / length, i * randomWaypoint.GetY() / length, 10));
+
+  for(int i = radius; i > 0; i--) {
+    controller->AddWaypoint(CVector3(i * randx, i * randy, 10));
   }
   controller->AddWaypoint(CVector3(0, 0, 10));
-  controller->AddMovement(new SpokeSpiralSearch(controller));
+  controller->AddMovement(new SpokeSpiralSearch(controller, radius));
 
   return true;
 }

@@ -17,7 +17,7 @@ void SimplePlume::Init(int xoffset, int yoffset, bool perturb) {
   for(int i = 0; i < _xsize; i++) {
     for(int j = 0; j < _ysize; j++) {
       double value = calculateValue((i / 10.0), (j / 10.0), perturb);
-      values[(i*_xsize) + j] = value;
+      values[(i*_ysize) + j] = value;
       if(value > max) {
         max = value;
         xmax = i + xoffset;
@@ -28,12 +28,13 @@ void SimplePlume::Init(int xoffset, int yoffset, bool perturb) {
 
   for(int i = 0; i < _xsize; i++) {
     for(int j = 0; j < _ysize; j++) {
-      values[(i*_xsize) + j] = values[(i*_xsize) + j] / max;
-      if(values[(i*_xsize) + j] < 0.005) {
-        values[(i*_xsize) + j] = 0;
+      values[(i*_ysize) + j] = values[(i*_ysize) + j] / max;
+      if(values[(i*_ysize) + j] < 0.005) {
+        values[(i*_ysize) + j] = 0;
       }
     }
   }
+  std::cout << "Maximums: x:" << xmax << " y:" << ymax << std::endl;
 }
 
 void SimplePlume::Destroy() {
@@ -62,7 +63,7 @@ double SimplePlume::getValue(int inputx, int inputy) {
   int x = inputx - xoffset;
   int y = inputy - yoffset + 200;
   if (x >= 0 && x < _xsize && y >= 0 && y < _ysize) {
-    return values[x * _xsize + y];
+    return values[x * _ysize + y];
   }
   return 0;
 }

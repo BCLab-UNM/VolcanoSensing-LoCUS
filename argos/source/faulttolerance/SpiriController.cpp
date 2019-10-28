@@ -1,6 +1,7 @@
 #include "SpiriController.h"
 #include "FaultToleranceLoopFunctions.h"
 #include "GasGradientDescentMovement.h"
+#include "LogPosition.h"
 
 void Spiri_controller::Init(TConfigurationNode& node) {
   compassSensor = GetSensor<argos::CCI_PositioningSensor>("positioning");
@@ -22,7 +23,7 @@ void Spiri_controller::ControlStep() {
       CVector3 normalizedDirection = reading.getLocation().Normalize();
 
       Gradient_loop_functions &loopFunctions = static_cast<Gradient_loop_functions &>(CSimulator::GetInstance().GetLoopFunctions());
-      movement->add(new GasGradientDescentMovement(this, &loopFunctions, reading.getValue(), normalizedDirection));
+      movement->add(new GasGradientDescentMovement(this, &loopFunctions, reading.getValue(), normalizedDirection, radius / 10));
 
       stopped = true;
     }

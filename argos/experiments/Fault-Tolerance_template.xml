@@ -38,6 +38,8 @@
     <!-- un-evolvable environment variables -->
     <simulation Seed    = "{seed}"
                 PerturbPlume = "{perturbPlume}"
+                FailureProbability = "{failureProbability}"
+                PlumeFailureProbability = "{plumeFailureProbability}"
                 RandomFailures = "{failures},{failtimestep}"/>
 
   </loop_functions>

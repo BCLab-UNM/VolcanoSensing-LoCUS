@@ -17,8 +17,7 @@ bool GasGradientDescentMovement::step() {
     }
   }
   if(zeroCount > 4) {
-    cout << "Too many zeros" << endl;
-    controller->AddMovement(new SpokeSpiralSearch(controller));
+    controller->AddMovement(new SpokeSpiralSearch(controller, radius));
   } else {
     controller->AddWaypoint(gradientStep);
     previousValue = reading.getValue();

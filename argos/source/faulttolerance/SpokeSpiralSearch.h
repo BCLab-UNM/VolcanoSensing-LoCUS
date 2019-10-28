@@ -7,12 +7,13 @@
 class SpokeSpiralSearch : public virtual Movement {
 
 public:
-  SpokeSpiralSearch(Spiri_controller* controller): controller(controller) {}
+  SpokeSpiralSearch(Spiri_controller* controller, int radius): controller(controller), radius(radius) {}
 
   bool step();
 
 private:
   Spiri_controller* controller;
+  int radius;
 
   argos::CVector3 buildArchimedesSpiralWaypoint(int index, double radius);
 };

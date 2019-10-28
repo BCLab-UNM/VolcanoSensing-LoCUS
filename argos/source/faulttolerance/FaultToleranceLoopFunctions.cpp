@@ -4,10 +4,15 @@
 
 void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
-
   TConfigurationNode simNode  = GetNode(node, "simulation");
 
   bool perturbPlume;
+  string failureProbabilityString;
+  string plumeFailureProbabilityString;
+  GetNodeAttribute(simNode, "FailureProbability", failureProbabilityString);
+  GetNodeAttribute(simNode, "PlumeFailureProbability", plumeFailureProbabilityString);
+  failureProbability = stof(failureProbabilityString);
+  plumeFailureProbability = stof(plumeFailureProbabilityString);
   GetNodeAttribute(simNode, "PerturbPlume", perturbPlume);
   long seed = 0;
   GetNodeAttributeOrDefault(simNode, "Seed", seed, (long)0);
@@ -20,13 +25,26 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   cout << "Configuration:"
           "\nradius:" << stopRadius <<
           "\nperturbPlume: " << perturbPlume <<
+          "\nfailureProbability: " << failureProbability <<
+          "\nplumeFailureProbability: " << plumeFailureProbability <<
           "\nseed:" << seed <<
           "\nfailures:" << droneFailureString <<
           "\nrandomfailures:" << randomFailureString << endl;
 
   srand(seed);
 
-  plume.Init(800 - (rand() % 1600), 800 - (rand() % 1600), perturbPlume);
+  int radius = 1000;
+
+  int plumeX;
+  int plumeY;
+
+  do{
+    plumeX = radius - (rand() % (radius * 2));
+    plumeY = radius - (rand() % (radius * 2));
+  } while(sqrt((plumeX * plumeX) + (plumeY * plumeY)) > radius);
+  cout << "x: " << plumeX << " y:" << plumeY << " radius: " << sqrt((plumeX * plumeX) + (plumeY * plumeY)) << endl;
+
+  plume.Init(plumeX, plumeY, perturbPlume);
 
   loadDroneFailures(droneFailureString, randomFailureString);
 
@@ -38,7 +56,7 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
     controllers.push_back(&controller);
 
-    controller.AddMovement(new SpokeSpiralSearch(&controller));
+    controller.AddMovement(new SpokeSpiralSearch(&controller, radius / 10));
   }
 }
 
@@ -71,8 +89,29 @@ void Gradient_loop_functions::PostStep() {
       }
     }
   }
+  for(Spiri_controller* controller : controllers) {
+    if(!controller->IsFailed()) {
+      double readingValue = controller->GetReading().getValue();
+      if ((1.0 * rand() / RAND_MAX) <= failureProbability ||
+              (1.0 * rand() / RAND_MAX) <= (plumeFailureProbability * readingValue)) {
+        cout << "Controller " << controller->GetId() << " failed at " << simulationTime << endl;
+        controller->fail();
+      } else if ((1.0 * rand() / RAND_MAX) <= (plumeFailureProbability * readingValue)) {
+        cout << "Controller " << controller->GetId() << " failed at " << simulationTime << " from plume." << endl;
+        controller->fail();
+      }
+    }
+  }
 
-  // TODO: movement?
+  if (!encounteredPlume) {
+    for(Spiri_controller* controller : controllers) {
+      if(controller->GetReading().getValue() > 0.005) {
+        encounteredPlume = true;
+        LOG << "encountered plume: " << simulationTime << endl;
+        break;
+      }
+    }
+  }
 }
 
 void Gradient_loop_functions::Reset() {
@@ -80,12 +119,25 @@ void Gradient_loop_functions::Reset() {
 }
 
 bool Gradient_loop_functions::IsExperimentFinished() {
+  int activeDrones = 0;
+  bool foundSource = false;
+  CVector3 plumeLocation(plume.getXMax() / 10, plume.getYMax() / 10, 0);
+
   for(Spiri_controller* controller : controllers) {
+    if(!controller->IsFailed()) {
+      activeDrones++;
+    }
     if(controller->GetReading().getValue() > 0.75) {
-      return true;
+      foundSource = true;
     }
   }
-  return simulationTime > 100000;
+
+
+  if (activeDrones == 0) {
+    LOG << "failed:true" << endl;
+  }
+
+  return foundSource || simulationTime > 1000000 || activeDrones == 0;
 }
 
 void Gradient_loop_functions::PostExperiment() {

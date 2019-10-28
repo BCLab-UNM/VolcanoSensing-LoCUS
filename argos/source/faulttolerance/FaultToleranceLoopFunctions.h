@@ -34,7 +34,9 @@ public:
 private:
 
   double stopRadius = 100;
-	static const int points_per_rotation = 10;
+  bool encounteredPlume = false;
+  double failureProbability = 0;
+  double plumeFailureProbability = 0;
 	vector<int> droneToFail;
 	vector<int> droneToFailAtTime;
   vector<int> randomFail;
@@ -46,7 +48,7 @@ private:
 
   void loadDroneFailures(string basic_string, string randomFailureString);
 
-  SimplePlume plume = SimplePlume(1000, 1000);
+  SimplePlume plume = SimplePlume(1000, 400);
 };
 
 #endif /* GRADIENT_LOOP_FUNCTIONS_H_ */

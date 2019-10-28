@@ -30,6 +30,7 @@ public:
   PositionReading GetReading();
 
 private:
+  int radius = 1000;
   bool failed = false;
   bool stopped = false;
   MovementVector* movement;

@@ -13,10 +13,12 @@ void Gradient_qt_user_functions::Init(TConfigurationNode &t_tree) {
 
   RegisterUserFunction<Gradient_qt_user_functions, CFloorEntity>(&Gradient_qt_user_functions::DrawOnArena);
 
-  for(int i = 0; i < 1000; i++) {
-    for(int j = 0; j < 1000; j++) {
+  SimplePlume plume = loopFunctions.getPlume();
+
+  for(int i = 0; i < plume.getXSize(); i++) {
+    for(int j = 0; j < plume.getYSize(); j++) {
       // Map the values into Blue to Red hue rainbow
-      readings[i][j] = ColorUtil::HSVtoRGB((1 - (loopFunctions.getPlume().getValue(i,j))) / 1.4, 1, 1);
+      readings[i][j] = ColorUtil::HSVtoRGB((1 - (plume.getValue(i + plume.getXOffset(), j + plume.getYOffset() - 200))) / 1.4, 1, 1);
     }
   }
 }
@@ -34,19 +36,12 @@ void Gradient_qt_user_functions::DrawOnArena(CFloorEntity& entity) {
     }
   }
 
-  /*for(int i = 0; i < 1000; i++) {
-    for(int j = 0; j < 1000; j++) {
-      if(loopFunctions.coverage[i][j]) {
-        CVector3 nest_3d(i - 500, j - 500, 0.1);
-        DrawBox(nest_3d, CQuaternion(), CVector3(1, 1, 0.001), CColor::BLUE);
-      }
-    }
-  }*/
+  SimplePlume plume = loopFunctions.getPlume();
 
-  for(int i = 0; i < 1000; i++) {
-    for(int j = 0; j < 1000; j++) {
-      if(loopFunctions.getPlume().getValue(i,j) > 0.005) {
-        CVector3 nest_3d((i / 10.0), (j / 10.0), 0.1);
+  for(int i = 0; i < plume.getXSize(); i++) {
+    for(int j = 0; j < plume.getYSize(); j++) {
+      if(plume.getValue(i + plume.getXOffset(),j + plume.getYOffset() - 200) > 0.005) {
+        CVector3 nest_3d(((i + plume.getXOffset()) / 10.0), ((j + plume.getYOffset() - 200) / 10.0), 0.1);
         DrawBox(nest_3d, CQuaternion(), CVector3(0.1, 0.1, 0.001), readings[i][j]);
       }
     }

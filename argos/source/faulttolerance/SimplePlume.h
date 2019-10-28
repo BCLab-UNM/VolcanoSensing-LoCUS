@@ -2,6 +2,7 @@
 #define GRADIENT_ARGOS_SIMPLEPUME_H
 
 #include <math.h>
+#include <complex>
 
 class SimplePlume {
 
@@ -13,6 +14,10 @@ public:
   double getValue(int x, int y);
   int getXMax() { return xmax;}
   int getYMax() { return ymax;}
+  int getXOffset() { return xoffset;}
+  int getYOffset() { return yoffset;}
+  int getXSize() { return _xsize;}
+  int getYSize() { return _ysize;}
 
 private:
   int _xsize;
@@ -23,6 +28,7 @@ private:
   int ymax;
   double* values;
   double calculateValue(double x, double y, bool perturb);
+
 };
 
 #endif //GRADIENT_ARGOS_SIMPLEPUME_H
