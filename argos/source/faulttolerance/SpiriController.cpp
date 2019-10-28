@@ -33,16 +33,14 @@ void Spiri_controller::setupPosition() {
   movement->reset();
   MoveToPosition* starting_position = new MoveToPosition(positionActuator, compassSensor);
   starting_position->init(location->getOffset());
-  addCoverage(CVector3(0, 0, 0));
   movement->add(starting_position);
   WaitForChildren* wait = new WaitForChildren(this, controllers);
   movement->add(wait);
 }
 
 void Spiri_controller::AddRecursiveWaypoint(CVector3 waypoint) {
-  addCoverage(waypoint);
-
   movement->add(CreateOffsetMovement(waypoint, location->getOffset()));
+
   WaitForChildren* wait = new WaitForChildren(this, controllers);
   movement->add(wait);
 
@@ -68,17 +66,6 @@ void Spiri_controller::fail() {
   failed = true;
 }
 
-void Spiri_controller::addCoverage(CVector3 waypoint) {
-
-  CVector3 offset = location->getOffset();
-  Gradient_loop_functions& loopFunctions = static_cast<Gradient_loop_functions&>(CSimulator::GetInstance().GetLoopFunctions());
-  for(int i = 0; i < loopFunctions.rmax; i++) {
-    for(int j = -1; j < loopFunctions.rmax; j++) {
-      loopFunctions.coverage[(int)(waypoint.GetX() + offset.GetX() + i + 500)][(int)(waypoint.GetY() + offset.GetY() + j + 500)] = true;
-    }
-  }
-}
-
 void Spiri_controller::SetupHeir() {
   heir = GetHeir();
 
@@ -91,13 +78,17 @@ void Spiri_controller::SetupParentHeir() {
   heir = GetHeir();
 
   if(!location->IsRoot()) {
-    getParentController()->SetupParentHeir();
+    Spiri_controller *parentController = getParentController();
+
+    if(parentController != NULL) {
+      parentController->SetupParentHeir();
+    }
   }
 }
 
 void Spiri_controller::Balance() {
 
-  if(location->getMaxChildrenSize() > 1) {
+  if(location != NULL && location->getMaxChildrenSize() > 1) {
     int maxDepth;
     Spiri_controller* maxDepthChild;
     int minDepth;
@@ -139,11 +130,16 @@ void Spiri_controller::Balance() {
         minDepthChild->Insert(childToMove);
         LOG << "Balancing at " << id << " moving " << childToMove->id << " into subtree of " << minDepthChild->id << endl;
       }
+      LOG << "Max depth: " << maxDepth << " min depth: " << minDepth << endl;
      }while(maxDepth - 1 > minDepth);
   }
 
-  if(!swarmManager->IsRoot(this)) {
-    getParentController()->Balance();
+  if(location != NULL && !swarmManager->IsRoot(this)) {
+    Spiri_controller *parentController = getParentController();
+
+    if(parentController != NULL) {
+      parentController->Balance();
+    }
   }
 }
 
@@ -195,7 +191,7 @@ void Spiri_controller::Insert(Spiri_controller *child) {
 
 int Spiri_controller::GetMinimumDepth() {
   int childMinimumHeight = 0;
-  if(swarmManager->GetChildren(this).size() == location->getMaxChildrenSize()) {
+  if(location != NULL && swarmManager->GetChildren(this).size() == location->getMaxChildrenSize()) {
     bool foundMinimumHeight = false;
     childMinimumHeight = 10000;
     for(ControllerBase* childController: swarmManager->GetChildren(this)) {
@@ -276,9 +272,13 @@ void Spiri_controller::replace(Spiri_controller *target) {
   target->location = NULL;
   target->heir = NULL;
   Spiri_controller *parent = dynamic_cast<Spiri_controller*>(swarmManager->GetValue(parentLocation));
-  parent->SetupParentHeir();
+  if(parent != NULL) {
+    parent->SetupParentHeir();
+  }
   Spiri_controller *heirParent = dynamic_cast<Spiri_controller*>(swarmManager->GetValue(location));
-  heirParent->SetupParentHeir();
+  if(heirParent != NULL) {
+    heirParent->SetupParentHeir();
+  }
 }
 
 bool Spiri_controller::failureDetected() {
@@ -309,27 +309,50 @@ vector<Spiri_controller *> Spiri_controller::getChildrenControllers() {
   return castControllers;
 }
 
-std::vector<PositionReading> Spiri_controller::getReadings() {
+std::vector<PositionReading> Spiri_controller::getReadings(int depth) {
   std::vector<PositionReading> readings;
 
-  CVector3 position = compassSensor->GetReading().Position;
+  readings.push_back(GetReading());
 
-  Gradient_loop_functions& loopFunctions = static_cast<Gradient_loop_functions&>(CSimulator::GetInstance().GetLoopFunctions());
-  double valueAtPosition = loopFunctions.getPlume().getValue(position.GetX() * 10 + 500, position.GetY() * 10);
-  if(isnan(valueAtPosition)) {
-    valueAtPosition = 0;
-  }
-  PositionReading reading(location->getOffset(), valueAtPosition);
-
-  readings.push_back(reading);
-
-  for(ControllerBase* base : swarmManager->GetChildren(this)) {
-    for(PositionReading childReading : dynamic_cast<Spiri_controller*>(base)->getReadings()) {
-      readings.push_back(childReading);
+  if(depth > 1) {
+    for (ControllerBase *base : swarmManager->GetChildren(this)) {
+      for (PositionReading childReading : dynamic_cast<Spiri_controller *>(base)->getReadings(depth - 1)) {
+        readings.push_back(childReading);
+      }
     }
   }
 
   return readings;
+}
+
+PositionReading Spiri_controller::GetReading() {
+  CVector3 position = compassSensor->GetReading().Position;
+
+  Gradient_loop_functions& loopFunctions = static_cast<Gradient_loop_functions&>(CSimulator::GetInstance().GetLoopFunctions());
+  double valueAtPosition = loopFunctions.getPlume().getValue(position.GetX() * 10, position.GetY() * 10);
+  if(isnan(valueAtPosition)) {
+    valueAtPosition = 0;
+  }
+  return PositionReading(position, valueAtPosition);
+}
+
+void Spiri_controller::AddWaitForChildren(vector<Spiri_controller*> *controllers) {
+  movement->add(new WaitForChildren(this, controllers));
+
+  for(Spiri_controller* childController : getChildrenControllers()) {
+    childController->AddWaitForChildren(controllers);
+  }
+}
+
+int Spiri_controller::GetSwarmSize() {
+
+  int swarmSize = 0;
+
+  for(ControllerBase* base : swarmManager->GetChildren(this)) {
+    swarmSize += base->GetSwarmSize();
+  }
+
+  return failed ? swarmSize : 1 + swarmSize;
 }
 
 REGISTER_CONTROLLER(Spiri_controller, "Spiri_controller")

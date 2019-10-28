@@ -38,9 +38,10 @@
     <!-- un-evolvable environment variables -->
     <simulation RMin    = "3"
                 RMax    = "3"
-                Seed    = "0"
-                StopCoverageRadius = "100"
-                DroneFailures = "0,1000;69,1000;20,1000;39,1000;74,2000;14,2500"/>
+                Seed    = "37"
+                FailureProbability = "0"
+                PlumeFailureProbability = "0"
+                PerturbPlume = "false"/>
 
   </loop_functions>
 
@@ -58,7 +59,7 @@
       <!--<entity quantity="13" max_trials="100">-->
       <!--<entity quantity="32" max_trials="100">-->
       <!--<entity quantity="42" max_trials="100">-->
-      <entity quantity="19" max_trials="100">
+      <entity quantity="10" max_trials="100">
         <spiri id="spiri0" camera_range="3" camera_aperture="30">
           <body position="1,1,0" orientation="45,0,0" />
           <controller config="Spiri" />
@@ -87,11 +88,11 @@
     <qt-opengl>
       <camera>
         <placement idx="0" position="-13.8526,-9.15786,196.957" look_at="-13.7732,-9.16102,195.96" up="0.996044,-0.039664,0.079517" lens_focal_length="25" />
-        <placement idx="1" position="-11.1853,-0.53,11.1853" look_at="-10.4782,-0.53,10.4782" up="0.707107,0,0.707107" lens_focal_length="20" />
+        <placement idx="1" position="-11.0908,-1.69866,10.5671" look_at="-11.0876,-1.80381,9.57266" up="0.0306206,-0.993979,0.105203" lens_focal_length="20" />
         <placement idx="2" position="-61.0288,-9.16558,64.5798" look_at="-60.4433,-8.83807,63.8382" up="0.647196,0.362015,0.670882" lens_focal_length="20" />
         <placement idx="3" position="-2.04976,-0.365749,1.3008" look_at="-1.79385,-1.28757,1.00968" up="0.0778745,-0.280512,0.956686" lens_focal_length="20" />
-        <placement idx="4" position="-2,0,2" look_at="0,0,0" up="0.707107,0,0.707107" lens_focal_length="20" />
-        <placement idx="5" position="-2,0,2" look_at="0,0,0" up="0.707107,0,0.707107" lens_focal_length="20" />
+        <placement idx="4" position="-15.3186,-64.5242,10.114" look_at="-16.2293,-64.388,9.72384" up="-0.385863,0.0576891,0.920751" lens_focal_length="20" />
+        <placement idx="5" position="-3.75362,-0.075,3.75362" look_at="-3.04652,-0.075,3.04652" up="0.707107,0,0.707107" lens_focal_length="20" />
         <placement idx="6" position="-2,0,2" look_at="0,0,0" up="0.707107,0,0.707107" lens_focal_length="20" />
         <placement idx="7" position="-2,0,2" look_at="0,0,0" up="0.707107,0,0.707107" lens_focal_length="20" />
         <placement idx="8" position="-2,0,2" look_at="0,0,0" up="0.707107,0,0.707107" lens_focal_length="20" />

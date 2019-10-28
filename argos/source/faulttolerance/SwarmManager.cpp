@@ -156,5 +156,12 @@ void SwarmManager::UpdateLocation(ControllerBase *value, SwarmLocation *location
 SwarmManager::SwarmManager(double rmin, double rmax) : rmin(rmin), rmax(rmax) {}
 
 bool SwarmManager::IsRoot(ControllerBase *value) {
-  return locationAssociation.at(value)->IsRoot();
+  return locationAssociation.find(value) != locationAssociation.end() && locationAssociation.at(value)->IsRoot();
+}
+
+SwarmLocation *SwarmManager::GetLocation(ControllerBase* controller) {
+  if(locationAssociation.find(controller) == locationAssociation.end()) {
+    std::cout << "Could not find controller" << std::endl;
+  }
+  return locationAssociation.at(controller);
 }

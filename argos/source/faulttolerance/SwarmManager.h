@@ -17,6 +17,7 @@ public:
   void RemoveChild(ControllerBase *child);
   SwarmLocation* AddChild(ControllerBase *parent, ControllerBase *child);
   ControllerBase* GetValue(SwarmLocation* location);
+  SwarmLocation* GetLocation(ControllerBase* controller);
 
   void UpdateLocation(ControllerBase *value, SwarmLocation *location);
 

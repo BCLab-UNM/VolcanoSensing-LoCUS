@@ -39,7 +39,9 @@
     <simulation RMin    = "{rmin}"
                 RMax    = "{rmax}"
                 Seed    = "{seed}"
-                StopCoverageRadius = "{coverage_radius}"
+                PerturbPlume = "{perturbPlume}"
+                FailureProbability = "{failureProbability}"
+                PlumeFailureProbability = "{plumeFailureProbability}"
                 RandomFailures = "{failures},{failtimestep}"/>
 
   </loop_functions>

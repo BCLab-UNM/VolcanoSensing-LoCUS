@@ -32,7 +32,6 @@ public:
 	std::vector<argos::CVector3> GetWaypoints() { return waypoints; }
 	
 	CColor GetFloorColor(const CVector2& p) { return CColor::WHITE; }
-  bool coverage[1000][1000];
   double rmax = 2;
 
   void SetRootController(Spiri_controller *toReplace, Spiri_controller *heir);
@@ -41,11 +40,11 @@ public:
 
 private:
 
+  const int radius = 1000;
   double rmin = 1;
-  double stopRadius = 100;
-	static const int points_per_rotation = 100;
-	double radii[points_per_rotation];
-  double loop[points_per_rotation];
+  bool encounteredPlume = false;
+  double failureProbability = 0;
+  double plumeFailureProbability = 0;
   int fullshells = 1;
 	int spiralIndex = 0;
 	bool constellation_setup = false;
@@ -63,17 +62,15 @@ private:
   long simulationTime = 0;
   bool healing = false;
   long healStart = 0;
-	argos::CVector3 buildArchimedesSpiralWaypoint(int index, double radius);
+	argos::CVector3 buildArchimedesSpiral(int index, double radius);
 
   void loadDroneFailures(string basic_string, string randomFailureString);
-
-  void initCoverage();
 
   void healFailedSwarm();
 
 	vector<Spiri_controller*> getNextFailures();
 
-  SimplePlume plume = SimplePlume(1000, 1000);
+  SimplePlume plume = SimplePlume(1000, 400);
 
   Eigen::Vector2f linearRegression(vector<PositionReading> vector);
 };

@@ -42,16 +42,20 @@ public:
   void replace(Spiri_controller *target);
   bool failureDetected();
   void SetupParentHeir();
-
+  bool IsFailed() {return failed;}
+  std::vector<PositionReading> getReadings(int depth);
+  PositionReading GetReading();
+  void AddWaitForChildren(vector<Spiri_controller *> *pVector);
+  int GetSwarmSize();
   Spiri_controller *getParentController();
   vector<Spiri_controller *> getChildrenControllers();
+
   Spiri_controller *heir = NULL;
   int id;
   bool failed = false;
+  bool processedFail = false;
   SwarmLocation *location;
   SwarmManager* swarmManager;
-
-  std::vector<PositionReading> getReadings();
 
 private:
 
@@ -60,13 +64,13 @@ private:
   argos::CCI_PositioningSensor* compassSensor;
   argos::CCI_QuadRotorPositionActuator* positionActuator;
   std::vector<Spiri_controller*>* controllers;
-  void setupPosition() ;
-  void addCoverage(CVector3 waypoint);
+  void setupPosition();
   Spiri_controller* GetHeir();
   Spiri_controller* GetSuccessor();
   Spiri_controller* GetPredecessor();
   Spiri_controller* leftmost();
   Spiri_controller* rightmost();
+
 };
 
 #endif /* SPIRI_CONTROLLER_H_ */

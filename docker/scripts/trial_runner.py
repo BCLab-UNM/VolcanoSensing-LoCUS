@@ -6,11 +6,11 @@ def run_trial(args):
 
             for line in fin:
                 updated = line\
-                    .replace('{failures}', "{}".format(args.failures))\
                     .replace('{rmin}', "{}".format(args.rmin))\
                     .replace('{rmax}', "{}".format(args.rmax))\
-                    .replace('{coverage_radius}', "{}".format(args.coverage_radius))\
-                    .replace('{failtimestep}', "{}".format(args.failtimestep))\
+                    .replace('{perturbPlume}', "{}".format(args.perturbPlume).lower())\
+                    .replace('{failureProbability}', "{}".format(args.failureProbability)) \
+                    .replace('{plumeFailureProbability}', "{}".format(args.plumeFailureProbability)) \
                     .replace('{swarmsize}', "{}".format(args.swarmsize))\
                     .replace('{seed}', "{}".format(args.seed))
                 configuration_file.write(updated)

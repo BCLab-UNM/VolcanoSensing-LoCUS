@@ -4,13 +4,15 @@
 
 bool ReplaceWithHeir::step() {
   if (!setup) {
-    if (controllerToReplace->heir == NULL) {
+    if (controllerToReplace->heir == NULL || controllerToReplace->heir->IsFailed()) {
       // Remove from swarm
       Spiri_controller *parent = controllerToReplace->getParentController();
       LOG << "Removing " << controllerToReplace->id << " with no heir." << endl;
       swarmManager->RemoveChild(controllerToReplace);
       controllerToReplace->location = NULL;
-      parent->SetupParentHeir();
+      if(parent != NULL) {
+        parent->SetupParentHeir();
+      }
       replacementMovement = new EmptyMovement();
     } else {
       LOG << "Replacing " << controllerToReplace->id << " with heir " << controllerToReplace->heir->id << endl;

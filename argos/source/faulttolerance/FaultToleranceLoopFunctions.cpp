@@ -7,13 +7,18 @@
 
 void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
-  plume.Init();
-
   TConfigurationNode simNode  = GetNode(node, "simulation");
 
+  bool perturbPlume;
+  string failureProbabilityString;
+  string plumeFailureProbabilityString;
+  GetNodeAttribute(simNode, "FailureProbability", failureProbabilityString);
+  GetNodeAttribute(simNode, "PlumeFailureProbability", plumeFailureProbabilityString);
+  failureProbability = stof(failureProbabilityString);
+  plumeFailureProbability = stof(plumeFailureProbabilityString);
   GetNodeAttribute(simNode, "RMin", rmin);
   GetNodeAttribute(simNode, "RMax", rmax);
-  GetNodeAttribute(simNode, "StopCoverageRadius", stopRadius);
+  GetNodeAttribute(simNode, "PerturbPlume", perturbPlume);
   long seed = 0;
   GetNodeAttributeOrDefault(simNode, "Seed", seed, (long)0);
   string droneFailureString;
@@ -25,21 +30,28 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   cout << "Configuration:"
           "\nrmin:" << rmin <<
           "\nrmax:" << rmax <<
-          "\nradius:" << stopRadius <<
+          "\nperturbPlume: " << perturbPlume <<
+          "\nfailureProbability: " << failureProbability <<
+          "\nplumeFailureProbability: " << plumeFailureProbability <<
           "\nseed:" << seed <<
           "\nfailures:" << droneFailureString <<
           "\nrandomfailures:" << randomFailureString << endl;
 
   srand(seed);
 
+  int plumeX;
+  int plumeY;
+
+  do{
+    plumeX = radius - (rand() % (radius * 2));
+    plumeY = radius - (rand() % (radius * 2));
+  } while(sqrt((plumeX * plumeX) + (plumeY * plumeY)) > radius);
+
+  LOG << "x: " << plumeX << " y:" << plumeY << " radius: " << sqrt((plumeX * plumeX) + (plumeY * plumeY)) << endl;
+
+  plume.Init(plumeX, plumeY, perturbPlume);
+
   loadDroneFailures(droneFailureString, randomFailureString);
-
-  initCoverage();
-
-  for(int i = 0; i < points_per_rotation; i++) {
-    radii[i] = 0;
-    loop[i] = -1;
-  }
 
   swarmManager = new SwarmManager(rmin, rmax);
 
@@ -66,6 +78,7 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   }
 
   rootController->SetupHeir();
+  fullshells = rootController->GetMinimumDepth();
 }
 
 void Gradient_loop_functions::Destroy() {
@@ -97,30 +110,47 @@ void Gradient_loop_functions::PostStep() {
       }
     }
   }
+  for(Spiri_controller* controller : controllers) {
+    if(!controller->IsFailed()) {
+      double readingValue = controller->GetReading().getValue();
+      if ((1.0 * rand() / RAND_MAX) <= failureProbability ||
+          (1.0 * rand() / RAND_MAX) <= (plumeFailureProbability * readingValue)) {
+        LOG << "Controller " << controller->id << " failed at " << simulationTime << endl;
+        controller->fail();
+      } else if ((1.0 * rand() / RAND_MAX) <= (plumeFailureProbability * readingValue)) {
+        LOG << "Controller " << controller->id << " failed at " << simulationTime << " from plume." << endl;
+        controller->fail();
+      }
+    }
+  }
+
+  if (!encounteredPlume) {
+    for(Spiri_controller* controller : controllers) {
+      if(controller->GetReading().getValue() > 0.005) {
+        encounteredPlume = true;
+        LOG << "encountered plume: " << simulationTime << endl;
+        break;
+      }
+    }
+  }
 
   if (rootController->failureDetected()) {
-    LOG << "Healing" << endl;
+    LOG << "Healing size " << rootController->GetSwarmSize() << endl;
     healing = true;
     healStart = simulationTime;
     healFailedSwarm();
-    spiralIndex--;
   } else {
     if (rootController->IsFinished()) {
       if (!constellation_setup) {
         LOG << "Setup:" << simulationTime << endl;
         constellation_setup = true;
       }
-      int minimumDepth = rootController->GetMinimumDepth();
-      if(fullshells != minimumDepth) {
-        fullshells = minimumDepth;
-        LOG << "Fullshells:" << fullshells << endl;
-      }
       if(healing) {
         healing = false;
         LOG << "Healing took: " << (simulationTime - healStart) << endl;
       }
-
-      std::vector<PositionReading> readings = rootController->getReadings();
+      int currentFullShells = rootController->GetMinimumDepth();
+      std::vector<PositionReading> readings = rootController->getReadings(currentFullShells);
       for(PositionReading reading : readings) {
         readingQueue.push_front(reading);
       }
@@ -129,13 +159,13 @@ void Gradient_loop_functions::PostStep() {
       }
       Eigen::Vector2f vector = linearRegression(readings);
       if(vector.norm() > 0) {
-        currentPosition += argos::CVector3(vector(0), vector(1), 0);
-        cout << "currentPosition = " << currentPosition << endl;
+        currentPosition += argos::CVector3(vector(0),  vector(1), 0);
+        currentPosition += argos::CVector3(rand() % 100 / 1000.0, rand() % 100 / 1000.0, 0);
         rootController->AddRecursiveWaypoint(currentPosition);
         waypoints.push_back(currentPosition);
       }
       else {
-        argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(++spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
+        argos::CVector3 waypoint = buildArchimedesSpiral(++spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
         currentPosition = waypoint;
         rootController->AddRecursiveWaypoint(waypoint);
         waypoints.push_back(waypoint);
@@ -147,11 +177,12 @@ void Gradient_loop_functions::PostStep() {
 void Gradient_loop_functions::healFailedSwarm() {
 
   Finishable* lastMovement = new EmptyMovement();
-  argos::CVector3 waypoint = buildArchimedesSpiralWaypoint(spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
+  argos::CVector3 waypoint = buildArchimedesSpiral(spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
   for(Spiri_controller* failedController : getNextFailures()) {
     Movement* replaceWithHeir = new ReplaceWithHeir(this, failedController, waypoint, &controllers, swarmManager);
     ThenMovement* waitForPrevious = new ThenMovement(lastMovement, replaceWithHeir);
     failedController->AddMovement(waitForPrevious);
+    failedController->AddWaitForChildren(&controllers);
     lastMovement = waitForPrevious;
   }
   rootController->AddMovement(new BalanceMovement(this));
@@ -170,9 +201,9 @@ vector<Spiri_controller*> Gradient_loop_functions::getNextFailures() {
     Spiri_controller* node = nodes.front();
     nodes.pop_front();
 
-    if(node->failed) {
+    if(node->failed && !node->processedFail) {
       failedVector.push_back(node);
-      node->failed = false;
+      node->processedFail = true;
     }
 
     for(ControllerBase* childController : swarmManager->GetChildren(node)) {
@@ -185,48 +216,46 @@ vector<Spiri_controller*> Gradient_loop_functions::getNextFailures() {
   return failedVector;
 }
 
-argos::CVector3 Gradient_loop_functions::buildArchimedesSpiralWaypoint(int index, double radius) {
-  int indexLoop = index / points_per_rotation;
-  int indexMod = index % points_per_rotation;
-
-  double angle = index * 2 * M_PI / points_per_rotation;
-
-  if(loop[indexMod] != indexLoop) {
-    // https://www.comsol.com/blogs/how-to-build-a-parameterized-archimedean-spiral-geometry/
-    double b;
-    double point_radius;
-
-    if(index < points_per_rotation) {
-      b = radius / (2 * M_PI);
-      point_radius = b * angle;
-    } else {
-      point_radius = radii[indexMod] + radius;
-    }
-    radii[indexMod] = point_radius;
-    loop[indexMod] = indexLoop;
-  }
-
-  double point_radius = radii[index % points_per_rotation];
-
+argos::CVector3 Gradient_loop_functions::buildArchimedesSpiral(int index, double radius) {
   double altitude = 0;
+
+  // https://www.comsol.com/blogs/how-to-build-a-parameterized-archimedean-spiral-geometry/
+  double b = 2 * radius / (2 * M_PI);
+
+  double angle = index * 2 * M_PI / 30;
+  double point_radius = b * angle;
   double xoffset = point_radius * cos(angle); // in meters
   double yoffset = point_radius * sin(angle);
 
-  argos::CVector3 waypoint(xoffset, yoffset, altitude);
-
-  return waypoint;
+  return argos::CVector3(xoffset, yoffset, altitude);
 }
 
 void Gradient_loop_functions::Reset() {
   spiralIndex = 0;
   simulationTime = 0;
-
-  initCoverage();
 }
 
 bool Gradient_loop_functions::IsExperimentFinished() {
-  bool surveyCovered = radii[spiralIndex % points_per_rotation] > stopRadius;
-  return rootController->IsFinished() && surveyCovered;
+  bool foundSource = false;
+  int currentFullShells = rootController->GetMinimumDepth();
+  currentFullShells = currentFullShells > 1 ? currentFullShells : 2;
+  std::vector<PositionReading> readings = rootController->getReadings(currentFullShells);
+  double minDistance = 1000000;
+  CVector3 plumeLocation(plume.getXMax() / 10, plume.getYMax() / 10, 0);
+  for(PositionReading reading : readings) {
+    CVector3 plumeDistance = reading.getLocation() - plumeLocation;
+    double distance = plumeDistance.Length();
+    if(minDistance > distance) {
+      minDistance = distance;
+    }
+    if(distance < 3) {
+      foundSource = true;
+    }
+  }
+  if (rootController->GetSwarmSize() == 0) {
+    LOG << "failed:true" << endl;
+  }
+  return foundSource || simulationTime > 1000000 || rootController->GetSwarmSize() == 0;
 }
 
 void Gradient_loop_functions::PostExperiment() {
@@ -263,14 +292,6 @@ void Gradient_loop_functions::loadDroneFailures(string droneFailureString, strin
   }
 }
 
-void Gradient_loop_functions::initCoverage() {
-  for(int i = 0; i < 1000; i++) {
-    for(int j = 0; j < 1000; j++) {
-      coverage[i][j] = false;
-    }
-  }
-}
-
 void Gradient_loop_functions::SetRootController(Spiri_controller *toReplace, Spiri_controller *heir) {
   if(toReplace == rootController) {
     rootController = heir;
@@ -292,12 +313,7 @@ Eigen::Vector2f Gradient_loop_functions::linearRegression(vector<PositionReading
     i++;
   }
 
-  cout << "A: " << A << endl;
-  cout << "b: " << b << endl;
-
-  Eigen::VectorXf x = (A.transpose() * A).ldlt().solve(A.transpose() * b);
-
-  cout << "The solution using normal equations is:" << x << endl;
+  Eigen::VectorXf x = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
 
   Eigen::Vector2f x2;
   x2 << x(1), x(2);
