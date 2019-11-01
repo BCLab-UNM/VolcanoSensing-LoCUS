@@ -355,4 +355,17 @@ int Spiri_controller::GetSwarmSize() {
   return failed ? swarmSize : 1 + swarmSize;
 }
 
+int Spiri_controller::GetSwarmSize(int depth) {
+
+  int swarmSize = 0;
+
+  if(depth > 1) {
+    for (ControllerBase *base : swarmManager->GetChildren(this)) {
+      swarmSize += base->GetSwarmSize(depth - 1);
+    }
+  }
+
+  return failed ? swarmSize : 1 + swarmSize;
+}
+
 REGISTER_CONTROLLER(Spiri_controller, "Spiri_controller")

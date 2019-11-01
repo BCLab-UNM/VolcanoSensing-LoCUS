@@ -17,6 +17,8 @@ public:
   virtual bool IsRoot() = 0;
 
   virtual int getLevel() = 0;
+
+  virtual void setTheta(double theta) = 0;
 };
 
 #endif //GRADIENT_ARGOS_SWARMLOCATION_H

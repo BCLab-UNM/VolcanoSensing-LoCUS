@@ -41,7 +41,7 @@ void SwarmManager::initalizeLevel(int level) {
 
         argos::CVector3 offset = argos::CVector3(x, y, 10);
         SwarmLocation *parentPtr = calculateParent(level, offset);
-        SwarmLocation *locationPtr = new SwarmLocationImpl(level, this, offset, parentPtr);
+        SwarmLocation *locationPtr = new SwarmLocationImpl(level, this, angle, thetaOffset, radius, parentPtr);
         associate(parentPtr, locationPtr);
         locations.push_back(locationPtr);
       }
@@ -153,8 +153,6 @@ void SwarmManager::UpdateLocation(ControllerBase *value, SwarmLocation *location
 
 }
 
-SwarmManager::SwarmManager(double rmin, double rmax) : rmin(rmin), rmax(rmax) {}
-
 bool SwarmManager::IsRoot(ControllerBase *value) {
   return locationAssociation.find(value) != locationAssociation.end() && locationAssociation.at(value)->IsRoot();
 }
@@ -164,4 +162,10 @@ SwarmLocation *SwarmManager::GetLocation(ControllerBase* controller) {
     std::cout << "Could not find controller" << std::endl;
   }
   return locationAssociation.at(controller);
+}
+
+void SwarmManager::setTheta(double theta) {
+  for(SwarmLocation* location : locations) {
+    location->setTheta(theta);
+  }
 }

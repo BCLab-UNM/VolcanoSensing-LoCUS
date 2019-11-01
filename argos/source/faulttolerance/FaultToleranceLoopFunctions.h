@@ -40,6 +40,7 @@ public:
 
 private:
 
+  double thetaOffset = 0;
   const int radius = 1000;
   double rmin = 1;
   bool encounteredPlume = false;
@@ -55,6 +56,7 @@ private:
 	Spiri_controller* rootController;
   std::vector<Spiri_controller*> controllers;
   std::vector<argos::CVector3> waypoints;
+  std::vector<PositionReading> collectedReadings;
   SwarmManager* swarmManager;
   argos::CVector3 currentPosition;
 

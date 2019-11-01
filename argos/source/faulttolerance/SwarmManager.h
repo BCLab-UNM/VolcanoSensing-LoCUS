@@ -9,7 +9,7 @@
 class SwarmManager {
 
 public:
-  SwarmManager(double rmin, double rmax);
+  SwarmManager(double rmin, double rmax, double thetaOffset) : rmin(rmin), rmax(rmax), thetaOffset(thetaOffset) {}
   SwarmLocation *GetLocation(int index);
   std::vector<SwarmLocation *> *GetChildrenLocations(SwarmLocation *location);
   std::vector<ControllerBase*> GetChildren(ControllerBase *value);
@@ -25,9 +25,12 @@ public:
 
   bool IsRoot(ControllerBase *pController);
 
+  void setTheta(double theta);
+
 private:
   double rmin;
   double rmax;
+  double thetaOffset;
 
   std::vector<int> levelCounts;
   std::vector<SwarmLocation*> locations;

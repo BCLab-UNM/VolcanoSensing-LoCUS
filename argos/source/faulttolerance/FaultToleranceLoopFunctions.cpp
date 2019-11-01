@@ -53,7 +53,8 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
   loadDroneFailures(droneFailureString, randomFailureString);
 
-  swarmManager = new SwarmManager(rmin, rmax);
+  thetaOffset = (1.0 * rand() / RAND_MAX) * M_PI ;
+  swarmManager = new SwarmManager(rmin, rmax, thetaOffset);
 
   CSpace::TMapPerType& spiris = GetSpace().GetEntitiesByType("spiri");
 
@@ -149,19 +150,23 @@ void Gradient_loop_functions::PostStep() {
         healing = false;
         LOG << "Healing took: " << (simulationTime - healStart) << endl;
       }
-      int currentShells = rootController->GetMaximumDepth();
-      std::vector<PositionReading> allReadings = rootController->getReadings(currentShells);
-      int currentFullShells = rootController->GetMinimumDepth();
+      int currentFullShells = rootController->GetMaximumDepth();
       std::vector<PositionReading> readings = rootController->getReadings(currentFullShells);
-      Eigen::Vector2f vector = linearRegression(allReadings);
-      Eigen::Vector2f fullShellsVector = linearRegression(readings);
+      for(PositionReading reading : readings) {
+        collectedReadings.push_back(reading);
+      }
+      int fullSwarmSize = rootController->GetSwarmSize(currentFullShells);
+      if(collectedReadings.size() > fullSwarmSize * 2) {
+        collectedReadings.erase(collectedReadings.begin(), collectedReadings.begin() + (collectedReadings.size() - (fullSwarmSize * 2)));
+      }
+      //Eigen::Vector2f vector = linearRegression(allReadings);
+      Eigen::Vector2f fullShellsVector = linearRegression(collectedReadings);
       if(fullShellsVector.norm() > 0) {
+
+        thetaOffset += (1.0 * rand() / RAND_MAX) * M_PI / 8;
+        swarmManager->setTheta(thetaOffset);
         currentPosition += argos::CVector3(fullShellsVector(0),  fullShellsVector(1), 0);
-        currentPosition += argos::CVector3(rand() % 100 / 1000.0, rand() % 100 / 1000.0, 0);
-        rootController->AddRecursiveWaypoint(currentPosition);
-        waypoints.push_back(currentPosition);
-      } else if(vector.norm() > 0) {
-        currentPosition += argos::CVector3(vector(0),  vector(1), 0);
+        currentPosition += argos::CVector3(fullShellsVector(0),  fullShellsVector(1), 0);
         currentPosition += argos::CVector3(rand() % 100 / 1000.0, rand() % 100 / 1000.0, 0);
         rootController->AddRecursiveWaypoint(currentPosition);
         waypoints.push_back(currentPosition);
@@ -250,7 +255,7 @@ bool Gradient_loop_functions::IsExperimentFinished() {
     if(minDistance > distance) {
       minDistance = distance;
     }
-    if(distance < 3) {
+    if(distance < 1) {
       foundSource = true;
     }
   }

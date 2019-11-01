@@ -21,4 +21,4 @@ def buildArgosParameters(type, rmin, rmax, swarmsize, pertubePlume, failureProba
 
   return filename
 
-subprocess.call(['argos3', '-c', buildArgosParameters('swarm_size', 3, 3, 10, False, failureProbability=0.01, plumeFailureProbability=0, seed=82)])
+subprocess.call(['argos3', '-c', buildArgosParameters('swarm_size', 3, 3, 5, False, failureProbability=0, plumeFailureProbability=0, seed=7)])

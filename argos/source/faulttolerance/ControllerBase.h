@@ -8,6 +8,8 @@ public:
   virtual int GetMinimumDepth() = 0;
 
   virtual int GetSwarmSize() = 0;
+
+  virtual int GetSwarmSize(int depth) = 0;
 };
 
 #endif //GRADIENT_ARGOS_CONTROLLERBASE_H

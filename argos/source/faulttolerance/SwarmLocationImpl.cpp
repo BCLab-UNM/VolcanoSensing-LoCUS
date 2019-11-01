@@ -22,3 +22,10 @@ bool SwarmLocationImpl::IsRoot() {
 SwarmLocation *SwarmLocationImpl::GetParent() {
   return parent;
 }
+
+argos::CVector3 SwarmLocationImpl::getOffset() {
+  double x = radius * cos(angle + theta);
+  double y = radius * sin(angle + theta);
+
+  return argos::CVector3(x, y, 10);
+}

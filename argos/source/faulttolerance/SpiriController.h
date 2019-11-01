@@ -47,6 +47,7 @@ public:
   PositionReading GetReading();
   void AddWaitForChildren(vector<Spiri_controller *> *pVector);
   int GetSwarmSize();
+  int GetSwarmSize(int depth);
   Spiri_controller *getParentController();
   vector<Spiri_controller *> getChildrenControllers();
 
