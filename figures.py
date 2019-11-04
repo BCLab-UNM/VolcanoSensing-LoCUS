@@ -41,8 +41,8 @@ for failureCount in failures:
     failureTime.update({failureCount : []})
     plumeFailureTime.update({failureCount : []})
     for s in samples:
-        failureTime.get(failureCount).append(processFile(getFTResults('ft_failures', 10, 3, 3, False, failureCount, 0, s)))
-        plumeFailureTime.get(failureCount).append(processFile(getFTResults('ft_failures', 10, 3, 3, False, 0, failureCount, s)))
+        failureTime.get(failureCount).append(processFile(getFTResults('ft_failures', 30, 3, 3, False, failureCount, 0, s)))
+        plumeFailureTime.get(failureCount).append(processFile(getFTResults('ft_failures', 30, 3, 3, False, 0, failureCount, s)))
 
 
 # FT Perturbed
@@ -75,8 +75,8 @@ for failureCount in failures:
     baseline_swarmsize_failureTime.update({failureCount : []})
     baseline_swarmsize_plumeFailureTime.update({failureCount : []})
     for s in samples:
-        baseline_swarmsize_failureTime.get(failureCount).append(processFile(getBaselineResults('unc_failures', 10, False, failureCount, 0, s)))
-        baseline_swarmsize_plumeFailureTime.get(failureCount).append(processFile(getBaselineResults('unc_failures', 10, False, 0, failureCount, s)))
+        baseline_swarmsize_failureTime.get(failureCount).append(processFile(getBaselineResults('unc_failures', 30, False, failureCount, 0, s)))
+        baseline_swarmsize_plumeFailureTime.get(failureCount).append(processFile(getBaselineResults('unc_failures', 30, False, 0, failureCount, s)))
 
 # Baseline Perturbed
 # parallel $CMD_STR ::: $(seq 100) ::: true ::: 0 ::: 0 ::: $(seq 100)
@@ -132,18 +132,41 @@ pp.savefig()
 pp.close()
 
 
+# Swarm Size Box plots
+plt.clf()
+
+
+#ft_data.append([value['time'] for value in ftper_failureTime[5]])
+#ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[5]])
+ft_data.append([value['time'] for value in ft_swarmsize_failureTime[10]])
+ft_data.append([value['time'] for value in baseline_swarmsize[10]])
+ft_data.append([value['time'] for value in ft_swarmsize_failureTime[15]])
+ft_data.append([value['time'] for value in baseline_swarmsize[15]])
+ft_data.append([value['time'] for value in ft_swarmsize_failureTime[20]])
+ft_data.append([value['time'] for value in baseline_swarmsize[20]])
+
+plt.boxplot(ft_data, notch=1, labels=['FT 10', 'UNC 10', 'FT 15', 'UNC 15', 'FT 20', 'UNC 20'])
+
+pp = PdfPages('figs/swarmSizeBoxPlots.pdf')
+plt.xlabel('Swarm Size')
+plt.ylabel('Simulation Timesteps')
+plt.title('Time to Find Perturbed Plume Source by Swarm Size')
+plt.legend()
+pp.savefig()
+pp.close()
+
 # Perturbed
 plt.clf()
 
 maxx = []
 x = []
 err = []
+    
 
 for key in swarmsizes:
     maxx.append(max([value['time'] for value in ftper_failureTime[key]]))
     x.append(np.mean([value['time'] for value in ftper_failureTime[key]]))
     err.append(np.std([value['time'] for value in ftper_failureTime[key]]))
-    ft_data.append([value['time'] for value in ftper_failureTime[key]])
 
 maxx2 = []
 x2 = []
@@ -154,13 +177,35 @@ for key in swarmsizes:
     x2.append(np.mean([value['time'] for value in baseline_per_swarmsize_failureTime[key]]))
     err2.append(np.std([value['time'] for value in baseline_per_swarmsize_failureTime[key]]))
 
-plt.boxplot(ft_data, notch=1)
-# plt.errorbar(swarmsizes, x, err, fmt='-o', label="Fault Tolerant Swarm")
-# plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="Uncoordinated Swarm")
-# plt.plot(swarmsizes, maxx, label="Max Fault Tolerant Swarm")
-# plt.plot(swarmsizes, maxx2, label="Max Uncoordinated Swarm")
+plt.errorbar(swarmsizes, x, err, fmt='-o', label="Fault Tolerant Swarm")
+plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="Uncoordinated Swarm")
+plt.plot(swarmsizes, maxx, label="Max Fault Tolerant Swarm")
+plt.plot(swarmsizes, maxx2, label="Max Uncoordinated Swarm")
 
 pp = PdfPages('figs/perturbed.pdf')
+plt.xlabel('Swarm Size')
+plt.ylabel('Simulation Timesteps')
+plt.title('Time to Find Perturbed Plume Source by Swarm Size')
+plt.legend()
+pp.savefig()
+pp.close()
+
+# Perturbed Box plots
+plt.clf()
+
+
+#ft_data.append([value['time'] for value in ftper_failureTime[5]])
+#ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[5]])
+ft_data.append([value['time'] for value in ftper_failureTime[10]])
+ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[10]])
+ft_data.append([value['time'] for value in ftper_failureTime[15]])
+ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[15]])
+ft_data.append([value['time'] for value in ftper_failureTime[20]])
+ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[20]])
+
+plt.boxplot(ft_data, notch=1, labels=['FT 10', 'UNC 10', 'FT 15', 'UNC 15', 'FT 20', 'UNC 20'])
+
+pp = PdfPages('figs/perturbedBoxPlots.pdf')
 plt.xlabel('Swarm Size')
 plt.ylabel('Simulation Timesteps')
 plt.title('Time to Find Perturbed Plume Source by Swarm Size')
@@ -422,9 +467,9 @@ with open('ft_swarm.csv', mode='w') as file:
 
     for failureCount in failures:
         for value in failureTime.get(failureCount):
-            csvWriter.writerow([10, 3, 3, False, failureCount, 0, value.get('time'), value.get('plumeEncountered'), value.get('healingTook'), value.get('failed')])
+            csvWriter.writerow([30, 3, 3, False, failureCount, 0, value.get('time'), value.get('plumeEncountered'), value.get('healingTook'), value.get('failed')])
         for value in plumeFailureTime.get(failureCount):
-            csvWriter.writerow([10, 3, 3, False, 0, failureCount, value.get('time'), value.get('plumeEncountered'), value.get('healingTook'), value.get('failed')])
+            csvWriter.writerow([30, 3, 3, False, 0, failureCount, value.get('time'), value.get('plumeEncountered'), value.get('healingTook'), value.get('failed')])
     for swarmsize in swarmsizes:
         for value in ftper_failureTime.get(swarmsize):
             csvWriter.writerow([swarmsize, 3, 3, True, 0, 0, value.get('time'), value.get('plumeEncountered'), value.get('healingTook'), value.get('failed')])
@@ -438,9 +483,9 @@ with open('unc_swarm.csv', mode='w') as file:
 
     for failureCount in failures:
         for value in baseline_swarmsize_failureTime.get(failureCount):
-            csvWriter.writerow([10, False, failureCount, 0, value.get('time'), value.get('plumeEncountered'), value.get('healingTook'), value.get('failed')])
+            csvWriter.writerow([30, False, failureCount, 0, value.get('time'), value.get('plumeEncountered'), value.get('healingTook'), value.get('failed')])
         for value in baseline_swarmsize_plumeFailureTime.get(failureCount):
-            csvWriter.writerow([10, False, 0, failureCount, value.get('time'), value.get('plumeEncountered'), value.get('healingTook'), value.get('failed')])
+            csvWriter.writerow([30, False, 0, failureCount, value.get('time'), value.get('plumeEncountered'), value.get('healingTook'), value.get('failed')])
     for swarmsize in swarmsizes:
         for value in baseline_per_swarmsize_failureTime.get(swarmsize):
             csvWriter.writerow([swarmsize, True, 0, 0, value.get('time'), value.get('plumeEncountered'), value.get('healingTook'), value.get('failed')])
