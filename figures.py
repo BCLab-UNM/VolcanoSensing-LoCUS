@@ -41,8 +41,8 @@ for failureCount in failures:
     failureTime.update({failureCount : []})
     plumeFailureTime.update({failureCount : []})
     for s in samples:
-        failureTime.get(failureCount).append(processFile(getFTResults('ft_failures', 30, 3, 3, False, failureCount, 0, s)))
-        plumeFailureTime.get(failureCount).append(processFile(getFTResults('ft_failures', 30, 3, 3, False, 0, failureCount, s)))
+        failureTime.get(failureCount).append(processFile(getFTResults('ft_failures', 10, 3, 3, False, failureCount, 0, s)))
+        plumeFailureTime.get(failureCount).append(processFile(getFTResults('ft_failures', 10, 3, 3, False, 0, failureCount, s)))
 
 
 # FT Perturbed
@@ -75,8 +75,8 @@ for failureCount in failures:
     baseline_swarmsize_failureTime.update({failureCount : []})
     baseline_swarmsize_plumeFailureTime.update({failureCount : []})
     for s in samples:
-        baseline_swarmsize_failureTime.get(failureCount).append(processFile(getBaselineResults('unc_failures', 30, False, failureCount, 0, s)))
-        baseline_swarmsize_plumeFailureTime.get(failureCount).append(processFile(getBaselineResults('unc_failures', 30, False, 0, failureCount, s)))
+        baseline_swarmsize_failureTime.get(failureCount).append(processFile(getBaselineResults('unc_failures', 10, False, failureCount, 0, s)))
+        baseline_swarmsize_plumeFailureTime.get(failureCount).append(processFile(getBaselineResults('unc_failures', 10, False, 0, failureCount, s)))
 
 # Baseline Perturbed
 # parallel $CMD_STR ::: $(seq 100) ::: true ::: 0 ::: 0 ::: $(seq 100)
