@@ -124,11 +124,14 @@ bool Gradient_loop_functions::IsExperimentFinished() {
   CVector3 plumeLocation(plume.getXMax() / 10, plume.getYMax() / 10, 0);
 
   for(Spiri_controller* controller : controllers) {
+    PositionReading reading = controller->GetReading();
+    CVector3 plumeDistance = reading.getLocation() - plumeLocation;
+    double distance = plumeDistance.Length();
+    if(distance < 1) {
+      foundSource = true;
+    }
     if(!controller->IsFailed()) {
       activeDrones++;
-    }
-    if(controller->GetReading().getValue() > 0.75) {
-      foundSource = true;
     }
   }
 
