@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#PBS -q default
+#PBS -l nodes=10:ppn=8
+#PBS -l walltime=24:00:00
+#PBS -N ft_failures
+#PBS -j oe
+#PBS -m bae
+#PBS –M johncarl@unm.edu
+
+module load anaconda
+module load parallel-20170322-gcc-7.1.0-csyw7ny
+module load singularity3-3.0.3-gcc-7.3.0-2coe6vd
+
+HOME_DIR="/users/johncarl/Fault-Tolerance-Drones-ARGoS/wheeler2"
+cd $PBS_O_WORKDIR
+
+TEMP_DIR=$HOME_DIR/temp
+EXPERIMENTS_DIR=$HOME_DIR/experiments
+
+CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttolerance/argos/experiments/ $PBS_O_WORKDIR/unt.simg --swarmsize {1} --rmin {2} --rmax {3} --perturbPlume {4} --failureProbability {5} --plumeFailureProbability {6} --seed {7} > $PBS_O_WORKDIR/results/unt_failures/result_{1}_{2}_{3}_{4}_{5}_{6}_{7}.txt"
+
+# Arena Size Coverage
+
+mkdir -p results/unt_failures
+
+parallel $CMD_STR ::: 30 ::: 3 ::: 3 ::: false ::: 1 0.1 0.09 0.08 0.07 0.06 0.05 0.04 0.03 0.03 0.01 0.009 0.008 0.007 0.006 0.005 0.004 0.003 0.002 0.001 0.0009 0.0008 0.0007 0.0006 0.0005 0.0004 0.0003 0.0002 0.0001 0.00009 0.00008 0.00007 0.00006 0.00005 0.00004 0.00003 0.00002 0.00001 0.000009 0.000008 0.000007 0.000006 0.000005 0.000004 0.000003 0.000002 0.000001 ::: 0 ::: $(seq 100)
+parallel $CMD_STR ::: 30 ::: 3 ::: 3 ::: false ::: 0 ::: 1 0.1 0.09 0.08 0.07 0.06 0.05 0.04 0.03 0.03 0.01 0.009 0.008 0.007 0.006 0.005 0.004 0.003 0.002 0.001 0.0009 0.0008 0.0007 0.0006 0.0005 0.0004 0.0003 0.0002 0.0001 0.00009 0.00008 0.00007 0.00006 0.00005 0.00004 0.00003 0.00002 0.00001 0.000009 0.000008 0.000007 0.000006 0.000005 0.000004 0.000003 0.000002 0.000001 ::: $(seq 100)

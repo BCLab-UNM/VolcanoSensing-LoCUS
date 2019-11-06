@@ -9,3 +9,13 @@ argos/experiments/coverage/*
 figs/*
 
 results/*
+
+wheeler/temp
+wheeler/experiments
+wheeler/results
+
+wheeler2/temp
+wheeler2/experiments
+wheeler2/results
+
+*.simg

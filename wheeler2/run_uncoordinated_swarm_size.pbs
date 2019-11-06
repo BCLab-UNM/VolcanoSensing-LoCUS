@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#PBS -q default
+#PBS -l nodes=10:ppn=8
+#PBS -l walltime=24:00:00
+#PBS -N unc_swarmsize
+#PBS -j oe
+#PBS -m bae
+#PBS –M johncarl@unm.edu
+
+module load anaconda
+module load parallel-20170322-gcc-7.1.0-csyw7ny
+module load singularity3-3.0.3-gcc-7.3.0-2coe6vd
+
+HOME_DIR="/users/johncarl/Fault-Tolerance-Drones-ARGoS/wheeler2"
+cd $PBS_O_WORKDIR
+
+TEMP_DIR=$HOME_DIR/temp
+EXPERIMENTS_DIR=$HOME_DIR/experiments
+
+CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttolerance/argos/experiments/ $PBS_O_WORKDIR/unc.simg --swarmsize {1} --perturbPlume {2} --failureProbability {3} --plumeFailureProbability {4} --seed {5} > $PBS_O_WORKDIR/results/unc_swarmsize/result_{1}_{2}_{3}_{4}_{5}.txt"
+
+# Arena Size Coverage
+
+mkdir -p results/unc_swarmsize
+
+parallel $CMD_STR ::: $(seq 100) ::: false ::: 0 ::: 0 ::: $(seq 100)
