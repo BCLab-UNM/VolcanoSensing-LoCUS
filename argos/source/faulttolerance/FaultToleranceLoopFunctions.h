@@ -40,6 +40,7 @@ public:
 
 private:
 
+  bool heal = true;
   double thetaOffset = 0;
   double rmin = 1;
   bool encounteredPlume = false;

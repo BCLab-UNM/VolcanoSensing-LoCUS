@@ -21,6 +21,9 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   GetNodeAttribute(simNode, "RMin", rmin);
   GetNodeAttribute(simNode, "RMax", rmax);
   GetNodeAttribute(simNode, "PerturbPlume", perturbPlume);
+  bool disableHeal;
+  GetNodeAttributeOrDefault(simNode, "DisableHeal", disableHeal, false);
+  heal = !disableHeal;
   long seed = 0;
   GetNodeAttributeOrDefault(simNode, "Seed", seed, (long)0);
   string droneFailureString;
@@ -32,6 +35,7 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   cout << "Configuration:"
           "\nrmin:" << rmin <<
           "\nrmax:" << rmax <<
+          "\nheal:" << heal <<
           "\nradius:" << radius <<
           "\nperturbPlume: " << perturbPlume <<
           "\nfailureProbability: " << failureProbability <<
@@ -186,16 +190,18 @@ void Gradient_loop_functions::PostStep() {
 
 void Gradient_loop_functions::healFailedSwarm() {
 
-  Finishable* lastMovement = new EmptyMovement();
-  argos::CVector3 waypoint = buildArchimedesSpiral(spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
-  for(Spiri_controller* failedController : getNextFailures()) {
-    Movement* replaceWithHeir = new ReplaceWithHeir(this, failedController, waypoint, &controllers, swarmManager);
-    ThenMovement* waitForPrevious = new ThenMovement(lastMovement, replaceWithHeir);
-    failedController->AddMovement(waitForPrevious);
-    failedController->AddWaitForChildren(&controllers);
-    lastMovement = waitForPrevious;
+  if(heal) {
+    Finishable *lastMovement = new EmptyMovement();
+    argos::CVector3 waypoint = buildArchimedesSpiral(spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
+    for (Spiri_controller *failedController : getNextFailures()) {
+      Movement *replaceWithHeir = new ReplaceWithHeir(this, failedController, waypoint, &controllers, swarmManager);
+      ThenMovement *waitForPrevious = new ThenMovement(lastMovement, replaceWithHeir);
+      failedController->AddMovement(waitForPrevious);
+      failedController->AddWaitForChildren(&controllers);
+      lastMovement = waitForPrevious;
+    }
+    rootController->AddMovement(new BalanceMovement(this));
   }
-  rootController->AddMovement(new BalanceMovement(this));
 }
 
 vector<Spiri_controller*> Gradient_loop_functions::getNextFailures() {

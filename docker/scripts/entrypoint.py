@@ -21,6 +21,10 @@ def get_args():
         type=int,
         default=100)
     parser.add_argument(
+        '--disableHeal',
+        type=bool,
+        default=False)
+    parser.add_argument(
         '--perturbPlume',
         type=str,
         default='false')

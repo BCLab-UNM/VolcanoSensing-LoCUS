@@ -40,6 +40,7 @@
                 RMax    = "{rmax}"
                 Seed    = "{seed}"
                 Radius  = "{radius}"
+                DisableHeal = "{disableHeal}"
                 PerturbPlume = "{perturbPlume}"
                 FailureProbability = "{failureProbability}"
                 PlumeFailureProbability = "{plumeFailureProbability}"

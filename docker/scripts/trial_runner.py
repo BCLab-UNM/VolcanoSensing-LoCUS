@@ -8,6 +8,7 @@ def run_trial(args):
                 updated = line\
                     .replace('{rmin}', "{}".format(args.rmin))\
                     .replace('{rmax}', "{}".format(args.rmax))\
+                    .replace('{disableHeal}', "{}".format(args.disableHeal).lower())\
                     .replace('{radius}', "{}".format(args.radius)) \
                     .replace('{arenaRadius}', "{}".format(args.radius * 3)) \
                     .replace('{perturbPlume}', "{}".format(args.perturbPlume).lower())\
