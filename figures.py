@@ -131,9 +131,9 @@ x2 = []
 err2 = []
 
 for key in swarmsizes:
-    maxx2.append(max([value['time'] for value in baseline_swarmsize[key]]))
-    x2.append(np.mean([value['time'] for value in baseline_swarmsize[key]]))
-    err2.append(np.std([value['time'] for value in baseline_swarmsize[key]]))
+    maxx2.append(max([value['time'] for value in baseline_swarmsize[key] if 'time' in value]))
+    x2.append(np.mean([value['time'] for value in baseline_swarmsize[key] if 'time' in value]))
+    err2.append(np.std([value['time'] for value in baseline_swarmsize[key] if 'time' in value]))
 
 plt.errorbar(swarmsizes, x, err, fmt='-o', label="LoCUS", color="#f1a340")
 plt.errorbar(swarmsizes, x2, err2, fmt='-o', label="MoBS", color="#998ec3", linestyle="--")
@@ -185,10 +185,10 @@ for i in swarmsizesToShow :
 
     #ft_data.append([value['time'] for value in ftper_failureTime[5]])
     #ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[5]])
-    ft_data.append([value['time'] for value in ft_swarmsize_failureTime[i]])
-    ft_data.append([value['time'] for value in baseline_swarmsize[i]])
-    ft_data.append([value['time'] for value in baseline_swarmsize[i]])
-    ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[i]])
+    ft_data.append([value['time'] for value in ft_swarmsize_failureTime[i] if 'time' in value])
+    ft_data.append([value['time'] for value in baseline_swarmsize[i] if 'time' in value])
+    ft_data.append([value['time'] for value in baseline_swarmsize[i] if 'time' in value])
+    ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[i] if 'time' in value])
 
     labels.append("LoCUS {}".format(i))
     labels.append("LoCUS {}".format(i))
@@ -265,10 +265,10 @@ for i in swarmsizesToShow :
 
     #ft_data.append([value['time'] for value in ftper_failureTime[5]])
     #ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[5]])
-    ft_data.append([value['time'] for value in ft_swarmsize_failureTime[i]])
-    ft_data.append([value['time'] for value in ftper_failureTime[i]])
-    ft_data.append([value['time'] for value in baseline_swarmsize[i]])
-    ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[i]])
+    ft_data.append([value['time'] for value in ft_swarmsize_failureTime[i] if 'time' in value])
+    ft_data.append([value['time'] for value in ftper_failureTime[i] if 'time' in value])
+    ft_data.append([value['time'] for value in baseline_swarmsize[i] if 'time' in value])
+    ft_data.append([value['time'] for value in baseline_per_swarmsize_failureTime[i] if 'time' in value])
 
     labels.append("LoCUS {}".format(i))
     labels.append("LoCUS {}".format(i))
