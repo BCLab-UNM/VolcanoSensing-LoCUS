@@ -18,10 +18,10 @@ cd $PBS_O_WORKDIR
 TEMP_DIR=$HOME_DIR/temp
 EXPERIMENTS_DIR=$HOME_DIR/experiments
 
-CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttolerance/argos/experiments/ $PBS_O_WORKDIR/ft.simg --swarmsize {1} --rmin {2} --rmax {3} --perturbPlume {4} --failureProbability {5} --plumeFailureProbability {6} --seed {7} > $PBS_O_WORKDIR/results/ft_per_swarmsize/result_{1}_{2}_{3}_{4}_{5}_{6}_{7}.txt"
+CMD_STR="singularity run -B $TEMP_DIR:/root/temp/ -B $EXPERIMENTS_DIR:/faulttolerance/argos/experiments/ $PBS_O_WORKDIR/ft.simg --swarmsize {1} --rmin {2} --rmax {3} --perturbPlume {4} --failureProbability {5} --plumeFailureProbability {6} --radius {7} --seed {8} > $PBS_O_WORKDIR/results/ft_per_swarmsize/result_{1}_{2}_{3}_{4}_{5}_{6}_{7}_{8}.txt"
 
 # Arena Size Coverage
 
 mkdir -p results/ft_per_swarmsize
 
-parallel $CMD_STR ::: $(seq 30) ::: 3 ::: 3 ::: true ::: 0 ::: 0 ::: $(seq 100)
+parallel $CMD_STR ::: $(seq 30) ::: 3 ::: 3 ::: true ::: 0 ::: 0 ::: 100 178 282 398 ::: $(seq 100)
