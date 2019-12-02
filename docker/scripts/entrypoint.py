@@ -13,6 +13,10 @@ def get_args():
         type=str,
         default='false')
     parser.add_argument(
+        '--radius',
+        type=int,
+        default=100)
+    parser.add_argument(
         '--failureProbability',
         type=str,
         default='0')

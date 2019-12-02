@@ -27,7 +27,7 @@ public:
 private:
   Gradient_loop_functions& loopFunctions;
 
-  CColor readings[1000][400];
+  CColor readings[2000][400];
 };
 
 #endif /* GRADIENT_QT_USER_FUNCTIONS_H */

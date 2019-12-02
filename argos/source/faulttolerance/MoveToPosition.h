@@ -10,7 +10,8 @@ class MoveToPosition : public virtual Movement {
 
 public:
 
-  MoveToPosition(argos::CCI_QuadRotorPositionActuator* positionActuator, argos::CCI_PositioningSensor* compassSensor) {
+  MoveToPosition(std::vector<argos::CVector3>* waypoints, argos::CCI_QuadRotorPositionActuator* positionActuator, argos::CCI_PositioningSensor* compassSensor) {
+    this->waypoints = waypoints;
     this->positionActuator = positionActuator;
     this->compassSensor = compassSensor;
   }
@@ -23,6 +24,7 @@ private:
   bool finished = false;
   bool commanded = false;
   argos::CVector3 target;
+  std::vector<argos::CVector3>* waypoints;
   argos::CCI_QuadRotorPositionActuator* positionActuator;
   argos::CCI_PositioningSensor* compassSensor;
 

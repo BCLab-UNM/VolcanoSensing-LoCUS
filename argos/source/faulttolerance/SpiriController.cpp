@@ -16,14 +16,14 @@ void Spiri_controller::ControlStep() {
 
     if (reading.getValue() > 0) {
       movement->reset();
-      MoveToPosition *stopMovement = new MoveToPosition(positionActuator, compassSensor);
+      MoveToPosition *stopMovement = new MoveToPosition(&waypoints, positionActuator, compassSensor);
       stopMovement->init(reading.getLocation());
       movement->add(stopMovement);
 
       CVector3 normalizedDirection = reading.getLocation().Normalize();
 
       Gradient_loop_functions &loopFunctions = static_cast<Gradient_loop_functions &>(CSimulator::GetInstance().GetLoopFunctions());
-      movement->add(new GasGradientDescentMovement(this, &loopFunctions, reading.getValue(), normalizedDirection, radius / 10));
+      movement->add(new GasGradientDescentMovement(this, &loopFunctions, reading.getValue(), angle, normalizedDirection, radius));
 
       stopped = true;
     }
@@ -39,7 +39,7 @@ void Spiri_controller::Reset() {
 
 void Spiri_controller::AddWaypoint(CVector3 waypoint) {
   if(!failed) {
-    MoveToPosition *moveTo = new MoveToPosition(positionActuator, compassSensor);
+    MoveToPosition *moveTo = new MoveToPosition(&waypoints, positionActuator, compassSensor);
     moveTo->init(waypoint);
 
     movement->add(moveTo);

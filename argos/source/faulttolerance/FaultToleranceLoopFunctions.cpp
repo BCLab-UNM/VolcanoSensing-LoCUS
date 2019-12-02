@@ -6,6 +6,8 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
   TConfigurationNode simNode  = GetNode(node, "simulation");
 
+  long radius;
+
   bool perturbPlume;
   string failureProbabilityString;
   string plumeFailureProbabilityString;
@@ -13,6 +15,7 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   GetNodeAttribute(simNode, "PlumeFailureProbability", plumeFailureProbabilityString);
   failureProbability = stof(failureProbabilityString);
   plumeFailureProbability = stof(plumeFailureProbabilityString);
+  GetNodeAttributeOrDefault(simNode, "Radius", radius, (long)100);
   GetNodeAttribute(simNode, "PerturbPlume", perturbPlume);
   long seed = 0;
   GetNodeAttributeOrDefault(simNode, "Seed", seed, (long)0);
@@ -23,7 +26,7 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   GetNodeAttributeOrDefault(simNode, "RandomFailures", randomFailureString, emptyDroneFailureString);
 
   cout << "Configuration:"
-          "\nradius:" << stopRadius <<
+          "\nradius:" << radius <<
           "\nperturbPlume: " << perturbPlume <<
           "\nfailureProbability: " << failureProbability <<
           "\nplumeFailureProbability: " << plumeFailureProbability <<
@@ -33,18 +36,17 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
   srand(seed);
 
-  int radius = 1000;
 
   int plumeX;
   int plumeY;
 
   do{
-    plumeX = radius - (rand() % (radius * 2));
-    plumeY = radius - (rand() % (radius * 2));
-  } while(sqrt((plumeX * plumeX) + (plumeY * plumeY)) > radius);
+    plumeX = (radius * 10) - (rand() % (radius * 20));
+    plumeY = (radius * 10) - (rand() % (radius * 20));
+  } while(sqrt((plumeX * plumeX) + (plumeY * plumeY)) > (radius * 10));
   cout << "x: " << plumeX << " y:" << plumeY << " radius: " << sqrt((plumeX * plumeX) + (plumeY * plumeY)) << endl;
 
-  plume.Init(plumeX, plumeY, perturbPlume);
+  plume.Init(plumeX , plumeY, perturbPlume);
 
   loadDroneFailures(droneFailureString, randomFailureString);
 
@@ -56,7 +58,11 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
 
     controllers.push_back(&controller);
 
-    controller.AddMovement(new SpokeSpiralSearch(&controller, radius / 10));
+    double theta = (1.0 * rand() / RAND_MAX) * 2 * M_PI;
+    controller.SetCurrentAngle(theta);
+    controller.SetRadius(radius);
+
+    controller.AddMovement(new SpokeSpiralSearch(&controller, radius));
   }
 }
 

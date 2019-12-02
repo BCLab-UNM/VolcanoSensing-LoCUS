@@ -10,11 +10,13 @@ public:
   GasGradientDescentMovement(Spiri_controller* controller,
           Gradient_loop_functions* loopFunctions,
           double previousValue,
+          double previousAngle,
           CVector3 previousVector,
           int radius):
           controller(controller),
           loopFunctions(loopFunctions),
           previousValue(previousValue),
+          previousAngle(previousAngle),
           previousVector(previousVector),
           radius(radius){}
 
@@ -24,6 +26,7 @@ private:
   Spiri_controller* controller;
   Gradient_loop_functions* loopFunctions;
   double previousValue;
+  double previousAngle;
   CVector3 previousVector;
   int zeroCount = 0;
 };

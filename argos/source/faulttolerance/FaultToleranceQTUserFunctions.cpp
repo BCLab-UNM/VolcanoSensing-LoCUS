@@ -25,12 +25,12 @@ void Gradient_qt_user_functions::Init(TConfigurationNode &t_tree) {
 
 void Gradient_qt_user_functions::DrawOnArena(CFloorEntity& entity) {
 
-  if(loopFunctions.GetWaypoints().size() > 1) {
+  for(Spiri_controller* controller : loopFunctions.GetControllers()) {
     size_t unStart = 0;
     size_t unEnd = 1;
-    while(unEnd < loopFunctions.GetWaypoints().size()) {
-      DrawRay(CRay3(loopFunctions.GetWaypoints()[unEnd],
-                    loopFunctions.GetWaypoints()[unStart]), CColor::RED, 3.0f);
+    while (unEnd < controller->GetWaypoints()->size()) {
+      DrawRay(CRay3((controller->GetWaypoints())->at(unEnd),
+                    (controller->GetWaypoints())->at(unStart)), CColor::RED, 2.0f);
       ++unStart;
       ++unEnd;
     }

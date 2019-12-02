@@ -27,15 +27,21 @@ public:
   bool IsFailed() {return failed;}
   void AddWaypoint(CVector3 waypoint);
   void AddMovement(Movement *move);
+  void SetCurrentAngle(double angle) {this->angle = angle;}
+  double GetCurrentAngle() {return angle;}
   PositionReading GetReading();
+  vector<CVector3>* GetWaypoints() { return &waypoints;}
+  void SetRadius(int radius){this->radius = radius;}
 
 private:
-  int radius = 1000;
+  int radius;
   bool failed = false;
   bool stopped = false;
+  double angle = 0;
   MovementVector* movement;
   argos::CCI_PositioningSensor* compassSensor;
   argos::CCI_QuadRotorPositionActuator* positionActuator;
+  vector<CVector3> waypoints;
 };
 
 #endif /* SPIRI_CONTROLLER_H_ */

@@ -6,6 +6,8 @@ def run_trial(args):
 
             for line in fin:
                 updated = line\
+                    .replace('{radius}', "{}".format(args.radius)) \
+                    .replace('{arenaRadius}', "{}".format(args.radius * 3)) \
                     .replace('{perturbPlume}', "{}".format(args.perturbPlume).lower())\
                     .replace('{failureProbability}', "{}".format(args.failureProbability)) \
                     .replace('{plumeFailureProbability}', "{}".format(args.plumeFailureProbability)) \

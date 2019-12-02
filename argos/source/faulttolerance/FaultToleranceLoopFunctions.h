@@ -26,6 +26,7 @@ public:
 	void PostExperiment();
   void Destroy();
   SimplePlume getPlume() { return plume;}
+  std::vector<Spiri_controller*> GetControllers() { return controllers;}
 
 	std::vector<argos::CVector3> GetWaypoints() { return waypoints; }
 	
@@ -33,7 +34,6 @@ public:
 
 private:
 
-  double stopRadius = 100;
   bool encounteredPlume = false;
   double failureProbability = 0;
   double plumeFailureProbability = 0;
@@ -48,7 +48,7 @@ private:
 
   void loadDroneFailures(string basic_string, string randomFailureString);
 
-  SimplePlume plume = SimplePlume(1000, 400);
+  SimplePlume plume = SimplePlume(2000, 400);
 };
 
 #endif /* GRADIENT_LOOP_FUNCTIONS_H_ */

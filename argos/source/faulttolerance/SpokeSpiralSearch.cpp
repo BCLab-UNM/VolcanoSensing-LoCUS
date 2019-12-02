@@ -4,10 +4,11 @@ bool SpokeSpiralSearch::step() {
 
   controller->AddWaypoint(CVector3(0, 0, 10));
 
-  double theta = (1.0 * rand() / RAND_MAX) * 2 * M_PI;
+  double angle = controller->GetCurrentAngle() + ((2 * M_PI) / 1.6180339887);
+  controller->SetCurrentAngle(angle);
 
-  double randx = cos(theta);
-  double randy = sin(theta);
+  double randx = cos(angle);
+  double randy = sin(angle);
 
   for(int i = 0; i < radius; i++) {
     controller->AddWaypoint(CVector3(i * randx, i * randy, 10));
