@@ -17,6 +17,10 @@ def get_args():
         type=int,
         default=1)
     parser.add_argument(
+        '--radius',
+        type=int,
+        default=100)
+    parser.add_argument(
         '--perturbPlume',
         type=str,
         default='false')

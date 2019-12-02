@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-def buildArgosParameters(type, rmin, rmax, swarmsize, pertubePlume, failureProbability = 0, plumeFailureProbability = 0, failures = 0, failtimestep = 1000, seed = 0):
+def buildArgosParameters(type, rmin, rmax, swarmsize, pertubePlume, radius = 100, failureProbability = 0, plumeFailureProbability = 0, failures = 0, failtimestep = 1000, seed = 0):
   if not os.path.exists("experiments/coverage/{}".format(type)):
     os.makedirs("experiments/coverage/{}".format(type))
   filename = "experiments/coverage/{}/Fault-Tolerance_{}_{}_{}_{}_{}_{}.xml".format(type, rmin, rmax, swarmsize, pertubePlume, failures, failtimestep)
@@ -11,6 +11,8 @@ def buildArgosParameters(type, rmin, rmax, swarmsize, pertubePlume, failureProba
         updated = line.replace('{failures}', "{}".format(failures)) \
           .replace('{rmin}', "{}".format(rmin)) \
           .replace('{rmax}', "{}".format(rmax)) \
+          .replace('{radius}', "{}".format(radius)) \
+          .replace('{arenaRadius}', "{}".format(radius * 3)) \
           .replace('{perturbPlume}', "{}".format(pertubePlume).lower()  ) \
           .replace('{failureProbability}', "{}".format(failureProbability)) \
           .replace('{plumeFailureProbability}', "{}".format(plumeFailureProbability)) \
@@ -20,5 +22,6 @@ def buildArgosParameters(type, rmin, rmax, swarmsize, pertubePlume, failureProba
         fout.write(updated)
 
   return filename
+# result_30_3_3_true_0.008_0_24.txt
 
-subprocess.call(['argos3', '-c', buildArgosParameters('swarm_size', 3, 3, 5, False, failureProbability=0, plumeFailureProbability=0, seed=7)])
+subprocess.call(['argos3', '-c', buildArgosParameters('swarm_size', 3, 3, 16, True, failureProbability=0, plumeFailureProbability=0, seed=18)])

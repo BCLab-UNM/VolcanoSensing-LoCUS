@@ -41,7 +41,6 @@ public:
 private:
 
   double thetaOffset = 0;
-  const int radius = 1000;
   double rmin = 1;
   bool encounteredPlume = false;
   double failureProbability = 0;
@@ -71,7 +70,7 @@ private:
 
 	vector<Spiri_controller*> getNextFailures();
 
-  SimplePlume plume = SimplePlume(1000, 400);
+  SimplePlume plume = SimplePlume(2000, 400);
 
   Eigen::Vector2f linearRegression(vector<PositionReading> vector);
 };

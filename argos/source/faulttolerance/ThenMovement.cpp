@@ -1,7 +1,3 @@
-//
-// Created by john on 8/18/19.
-//
-
 #include "ThenMovement.h"
 
 bool ThenMovement::step() {

@@ -39,6 +39,7 @@
     <simulation RMin    = "{rmin}"
                 RMax    = "{rmax}"
                 Seed    = "{seed}"
+                Radius  = "{radius}"
                 PerturbPlume = "{perturbPlume}"
                 FailureProbability = "{failureProbability}"
                 PlumeFailureProbability = "{plumeFailureProbability}"
@@ -49,7 +50,7 @@
   <!-- *********************** -->
   <!-- * Arena configuration * -->
   <!-- *********************** -->
-  <arena size="600.0, 600.0, 1" center="0,0,0">
+  <arena size="{arenaRadius}, {arenaRadius}, 1" center="0,0,0">
 
     <floor id="floor" source="loop_functions" pixels_per_meter="10"/>
 
@@ -88,12 +89,12 @@
   <visualization>
     <qt-opengl>
       <camera>
-        <placement idx="0" position="-13.8526,-9.15786,196.957" look_at="-13.7732,-9.16102,195.96" up="0.996044,-0.039664,0.079517" lens_focal_length="25" />
+        <placement idx="0" position="-13.5986,-9.16797,196.977" look_at="-13.5192,-9.17272,195.98" up="0.995053,-0.0595527,0.079517" lens_focal_length="25" />
         <placement idx="1" position="-11.1853,-0.53,11.1853" look_at="-10.4782,-0.53,10.4782" up="0.707107,0,0.707107" lens_focal_length="20" />
-        <placement idx="2" position="-61.0288,-9.16558,64.5798" look_at="-60.4433,-8.83807,63.8382" up="0.647196,0.362015,0.670882" lens_focal_length="20" />
+        <placement idx="2" position="-75.0566,83.4632,42.2143" look_at="-74.4681,82.7655,41.8058" up="0.263406,-0.312217,0.912764" lens_focal_length="20" />
         <placement idx="3" position="-2.04976,-0.365749,1.3008" look_at="-1.79385,-1.28757,1.00968" up="0.0778745,-0.280512,0.956686" lens_focal_length="20" />
-        <placement idx="4" position="-2,0,2" look_at="0,0,0" up="0.707107,0,0.707107" lens_focal_length="20" />
-        <placement idx="5" position="-2,0,2" look_at="0,0,0" up="0.707107,0,0.707107" lens_focal_length="20" />
+        <placement idx="4" position="-2.04976,-0.365749,1.3008" look_at="-1.79385,-1.28757,1.00968" up="0.0778745,-0.280512,0.956686" lens_focal_length="20" />
+        <placement idx="5"  position="-58.4433,74.4655,10.3933" look_at="-57.8954,73.7459,9.96665" up="0.258446,-0.339476,0.904412" lens_focal_length="20" />
         <placement idx="6" position="-2,0,2" look_at="0,0,0" up="0.707107,0,0.707107" lens_focal_length="20" />
         <placement idx="7" position="-2,0,2" look_at="0,0,0" up="0.707107,0,0.707107" lens_focal_length="20" />
         <placement idx="8" position="-2,0,2" look_at="0,0,0" up="0.707107,0,0.707107" lens_focal_length="20" />

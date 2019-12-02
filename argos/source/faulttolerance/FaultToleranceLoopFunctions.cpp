@@ -10,12 +10,14 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   TConfigurationNode simNode  = GetNode(node, "simulation");
 
   bool perturbPlume;
+  long radius;
   string failureProbabilityString;
   string plumeFailureProbabilityString;
   GetNodeAttribute(simNode, "FailureProbability", failureProbabilityString);
   GetNodeAttribute(simNode, "PlumeFailureProbability", plumeFailureProbabilityString);
   failureProbability = stof(failureProbabilityString);
   plumeFailureProbability = stof(plumeFailureProbabilityString);
+  GetNodeAttributeOrDefault(simNode, "Radius", radius, (long)100);
   GetNodeAttribute(simNode, "RMin", rmin);
   GetNodeAttribute(simNode, "RMax", rmax);
   GetNodeAttribute(simNode, "PerturbPlume", perturbPlume);
@@ -30,6 +32,7 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   cout << "Configuration:"
           "\nrmin:" << rmin <<
           "\nrmax:" << rmax <<
+          "\nradius:" << radius <<
           "\nperturbPlume: " << perturbPlume <<
           "\nfailureProbability: " << failureProbability <<
           "\nplumeFailureProbability: " << plumeFailureProbability <<
@@ -43,9 +46,9 @@ void Gradient_loop_functions::Init(TConfigurationNode& node) {
   int plumeY;
 
   do{
-    plumeX = radius - (rand() % (radius * 2));
-    plumeY = radius - (rand() % (radius * 2));
-  } while(sqrt((plumeX * plumeX) + (plumeY * plumeY)) > radius);
+    plumeX = (radius * 10) - (rand() % (radius * 20));
+    plumeY = (radius * 10) - (rand() % (radius * 20));
+  } while(sqrt((plumeX * plumeX) + (plumeY * plumeY)) > (radius * 10));
 
   LOG << "x: " << plumeX << " y:" << plumeY << " radius: " << sqrt((plumeX * plumeX) + (plumeY * plumeY)) << endl;
 
@@ -169,13 +172,13 @@ void Gradient_loop_functions::PostStep() {
         currentPosition += argos::CVector3(fullShellsVector(0),  fullShellsVector(1), 0);
         currentPosition += argos::CVector3(rand() % 100 / 1000.0, rand() % 100 / 1000.0, 0);
         rootController->AddRecursiveWaypoint(currentPosition);
-        waypoints.push_back(currentPosition);
+        waypoints.push_back(CVector3(currentPosition.GetX(), currentPosition.GetY(), 1));
       }
       else {
         argos::CVector3 waypoint = buildArchimedesSpiral(++spiralIndex, 2.0 * (fullshells - 0.5) * rmax);
         currentPosition = waypoint;
         rootController->AddRecursiveWaypoint(waypoint);
-        waypoints.push_back(waypoint);
+        waypoints.push_back(CVector3(waypoint.GetX(), waypoint.GetY(), 1));
       }
     }
   }

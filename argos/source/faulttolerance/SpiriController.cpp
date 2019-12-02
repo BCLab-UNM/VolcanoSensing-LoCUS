@@ -288,11 +288,11 @@ bool Spiri_controller::failureDetected() {
     childFailed |= childController->failureDetected();
   }
 
-  if(failed) {
+  if(failed && !processedFail) {
     LOG << "Failure detected at " << id << endl;
   }
 
-  return childFailed || failed;
+  return childFailed || (failed && !processedFail);
 }
 
 Spiri_controller *Spiri_controller::getParentController() {

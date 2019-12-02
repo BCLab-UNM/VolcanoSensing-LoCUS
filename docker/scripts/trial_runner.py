@@ -8,6 +8,8 @@ def run_trial(args):
                 updated = line\
                     .replace('{rmin}', "{}".format(args.rmin))\
                     .replace('{rmax}', "{}".format(args.rmax))\
+                    .replace('{radius}', "{}".format(args.radius)) \
+                    .replace('{arenaRadius}', "{}".format(args.radius * 3)) \
                     .replace('{perturbPlume}', "{}".format(args.perturbPlume).lower())\
                     .replace('{failureProbability}', "{}".format(args.failureProbability)) \
                     .replace('{plumeFailureProbability}', "{}".format(args.plumeFailureProbability)) \
